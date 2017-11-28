@@ -23,7 +23,7 @@
 </body>
 
 <footer>
-<p>Crée par COLICCHIO Alexandre, GASSER Thibaud, LETAIF Philippe, CHABALIER Andy</p>
+<p>Crée par COLICCHIO Alexandre, GASSER Thibaud, LETAIF Philippe, CHABALIER Andy - ENSISA 2017/2018</p>
 </footer>
 
 </html>
