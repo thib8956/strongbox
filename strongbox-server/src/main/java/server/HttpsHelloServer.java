@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class HttpsHelloServer {
 
     private HttpsServer httpsServer;
-    private Logger logger = Logger.getLogger(HttpsHelloServer.class.getName());
+    private final Logger logger = Logger.getLogger(HttpsHelloServer.class.getName());
 
     public HttpsHelloServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
@@ -67,16 +67,17 @@ public class HttpsHelloServer {
         httpsServer.start();
     }
 
-    public static class HelloHandler implements HttpHandler {
+    public class HelloHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String response = "Hello world !";
-
+            logger.info("Connexion started");
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
+            logger.info("Connexion done");
             os.close();
         }
     }
