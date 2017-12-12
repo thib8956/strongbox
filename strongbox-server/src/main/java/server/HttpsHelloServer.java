@@ -8,6 +8,8 @@ import java.net.InetSocketAddress;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +31,7 @@ public class HttpsHelloServer {
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new HttpsHelloServer.HelloHttpsConfigurator(sslContext));
             httpsServer.createContext(CONTEXT, new HelloHandler());
+            httpsServer.createContext("/pkserver", new PrivateKeyHandler());
             httpsServer.setExecutor(null);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -80,6 +83,43 @@ public class HttpsHelloServer {
         }
     }
 
+    private class PrivateKeyHandler implements HttpHandler {
+
+        Map<String, String> parameters;
+
+        public PrivateKeyHandler() {
+            super();
+            parameters = new HashMap<>();
+        }
+
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
+            String query = reader.readLine();
+            parseQuery(query);
+
+            StringBuilder response = new StringBuilder();
+            for (Map.Entry<String, String> param : parameters.entrySet()) {
+                response.append(param.getKey()).append(" ").append(param.getValue()).append("\n");
+            }
+            httpExchange.sendResponseHeaders(200, response.length());
+            try (OutputStream os = httpExchange.getResponseBody()) {
+                os.write(response.toString().getBytes());
+            }
+        }
+
+        private void parseQuery(String query) {
+            if (query == null) {
+                return;
+            }
+            final String[] pairs = query.split("[&]");
+            for (String pair : pairs) {
+                final String[] param = pair.split("[=]");
+                parameters.put(param[0], param[1]);
+            }
+        }
+    }
+
     private class HelloHttpsConfigurator extends HttpsConfigurator {
 
         HelloHttpsConfigurator(SSLContext sslContext) {
@@ -108,4 +148,5 @@ public class HttpsHelloServer {
         HttpsHelloServer server = new HttpsHelloServer();
         server.start();
     }
+
 }
