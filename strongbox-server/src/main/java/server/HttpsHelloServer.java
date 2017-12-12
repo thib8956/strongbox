@@ -63,8 +63,7 @@ public class HttpsHelloServer {
     public void stop(int retcode) {
         httpsServer.stop(retcode);
     }
-
-
+  
     public class HelloHandler implements HttpHandler {
 
         @Override
@@ -75,10 +74,12 @@ public class HttpsHelloServer {
             logger.info(httpExchange.getRequestMethod() + " " + requestedUri);
             //BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
             //logger.info(new BufferedReader(new InputStreamReader(httpExchange.getRe())).readLine());
+
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
+            logger.info("Connexion done");
             os.close();
         }
     }

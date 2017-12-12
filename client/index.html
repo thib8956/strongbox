@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr" >
+<head>
+  <meta charset="UTF-8">
+  <title>Cryptographie client</title>
+  
+  
+  
+      <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+
+<body>
+  <div class="login-page">
+  <div class="form">
+   <form class="login-form" action="https://localhost:8000/pkserver" method="post">
+      <input type="key" placeholder="publickey" name="publickey"/>
+      <input type="password" placeholder="password" name="password"/>
+      <input type="submit" value="Envoyer">
+    </form>
+  </div>
+</div>
+  
+    <script  src="js/index.js"></script>
+
+</body>
+
+<footer>
+<p> Created by Gasser Thibaud, Colicchio Alexandre, Letaif Phillipe and Chabalier Andy</p>
+</footer>
+</html>
