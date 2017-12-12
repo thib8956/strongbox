@@ -5,9 +5,9 @@ import com.sun.net.httpserver.*;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.util.Base64;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -16,12 +16,13 @@ import java.util.logging.Logger;
 public class HttpsHelloServer {
 
     private static final String CONTEXT = "/test";
-    private static final String KEYSTORE_PATH = "res/keystore.jks";
+    private static final String KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
+    private static final char[] KEYSTORE_PWD = "password".toCharArray();
 
     private HttpsServer httpsServer;
+    private KeyStore keystore;
     private final Logger logger = Logger.getLogger(HttpsHelloServer.class.getName());
-    private static final char[] KEYSTORE_PWD = "password".toCharArray();
 
     public HttpsHelloServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
@@ -41,17 +42,20 @@ public class HttpsHelloServer {
 
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
-        final KeyStore ks = KeyStore.getInstance("JKS");
+        keystore = KeyStore.getInstance("JKS");
+
+        //final Certificate certificate = keystore.getCertificate("");
+        //certificate.getPublicKey().getEncoded() --> mettre en base 64
 
         try (FileInputStream fis = new FileInputStream(KEYSTORE_PATH)) {
-            ks.load(fis, KEYSTORE_PWD);
+            keystore.load(fis, KEYSTORE_PWD);
         }
 
         final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X_509);
-        kmf.init(ks, KEYSTORE_PWD);
+        kmf.init(keystore, KEYSTORE_PWD);
 
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(SUN_X_509);
-        trustManagerFactory.init(ks);
+        trustManagerFactory.init(keystore);
         sslContext.init(kmf.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
     }
@@ -99,6 +103,13 @@ public class HttpsHelloServer {
             String query = reader.readLine();
             parseQuery(query);
 
+            // TODO: Check passwd in POST request to access the keystore.
+            try {
+                getKey();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            }
+
             StringBuilder response = new StringBuilder();
             for (Map.Entry<String, String> param : parameters.entrySet()) {
                 response.append(param.getKey()).append(" ").append(param.getValue()).append("\n");
@@ -106,6 +117,21 @@ public class HttpsHelloServer {
             httpExchange.sendResponseHeaders(200, response.length());
             try (OutputStream os = httpExchange.getResponseBody()) {
                 os.write(response.toString().getBytes());
+            }
+        }
+
+        private void getKey() throws KeyStoreException {
+            Enumeration<String> aliases = keystore.aliases();
+            while (aliases.hasMoreElements()) {
+                String alias = aliases.nextElement();
+                //if (keystore.isCertificateEntry(alias)) {
+                    final PublicKey publicKey = keystore.getCertificate(alias).getPublicKey();
+                    logger.info(publicKey.getAlgorithm());
+                    logger.info(publicKey.getFormat());
+                    logger.info(
+                            Base64.getEncoder().encodeToString(publicKey.getEncoded())
+                    );
+                //}
             }
         }
 
