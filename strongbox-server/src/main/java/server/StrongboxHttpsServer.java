@@ -1,18 +1,24 @@
 package server;
 
-import com.sun.net.httpserver.*;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpsServer;
 import core.KeyStoreManager;
 
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class StrongboxHttpsServer {
 
@@ -34,6 +40,7 @@ public class StrongboxHttpsServer {
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(this, sslContext));
             httpsServer.createContext(MAIN_CONTEXT, new ClientHandler());
             httpsServer.createContext("/pkserver", new StrongBoxHttpHandler());
+            httpsServer.createContext("/css", new StaticFileHandler("/css/", "../client/css", "index.html"));
             httpsServer.setExecutor(null);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -67,19 +74,23 @@ public class StrongboxHttpsServer {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            String response = "<h1>Hello world !</h1>";
+            String response = getHtml("../client/index.html");
+
             final String requestedUri = httpExchange.getRequestURI().toString();
             // Log the client request.
             logger.info(httpExchange.getRequestMethod() + " " + requestedUri);
-            //BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()));
-            //logger.info(new BufferedReader(new InputStreamReader(httpExchange.getRe())).readLine());
-
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             logger.info("Connexion done");
             os.close();
+        }
+
+        public String getHtml(String path) throws IOException {
+            try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+                return reader.lines().collect(Collectors.joining(""));
+            }
         }
     }
 
