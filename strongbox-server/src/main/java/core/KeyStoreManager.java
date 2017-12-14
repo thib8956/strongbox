@@ -1,6 +1,11 @@
+package core;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
 
 public class KeyStoreManager {
 
@@ -25,5 +30,16 @@ public class KeyStoreManager {
 
     public PrivateKey getPrivateKey(PublicKey publicKey) {
         return null;
+    }
+
+    public Iterable<Certificate> geyCertificates() throws KeyStoreException {
+        final ArrayList<Certificate> certificates = new ArrayList<>();
+        final Enumeration<String> aliases = keyStore.aliases();
+        while (aliases.hasMoreElements()) {
+            String alias = aliases.nextElement();
+            certificates.add(keyStore.getCertificate(alias));
+        }
+
+        return certificates;
     }
 }

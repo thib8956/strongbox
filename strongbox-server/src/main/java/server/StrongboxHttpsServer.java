@@ -1,38 +1,39 @@
 package server;
 
 import com.sun.net.httpserver.*;
+import core.KeyStoreManager;
 
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.security.*;
+import java.security.cert.Certificate;
 import java.util.Base64;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class HttpsHelloServer {
+public class StrongboxHttpsServer {
 
-    private static final String CONTEXT = "/test";
+    private static final String MAIN_CONTEXT = "/";
     private static final String KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
-    private static final char[] KEYSTORE_PWD = "password".toCharArray();
+    private static final String KEYSTORE_PWD = "password";
 
+    private final Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
     private HttpsServer httpsServer;
     private KeyStore keystore;
-    private final Logger logger = Logger.getLogger(HttpsHelloServer.class.getName());
 
-    public HttpsHelloServer() {
+    public StrongboxHttpsServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
         try {
             httpsServer = HttpsServer.create(address, 0);
 
             SSLContext sslContext = initSSLContext();
-            httpsServer.setHttpsConfigurator(new HttpsHelloServer.HelloHttpsConfigurator(sslContext));
-            httpsServer.createContext(CONTEXT, new HelloHandler());
-            httpsServer.createContext("/pkserver", new PrivateKeyHandler());
+            httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(this, sslContext));
+            httpsServer.createContext(MAIN_CONTEXT, new ClientHandler());
+            httpsServer.createContext("/pkserver", new StrongBoxHttpHandler());
             httpsServer.setExecutor(null);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -42,20 +43,14 @@ public class HttpsHelloServer {
 
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
-        keystore = KeyStore.getInstance("JKS");
-
-        //final Certificate certificate = keystore.getCertificate("");
-        //certificate.getPublicKey().getEncoded() --> mettre en base 64
-
-        try (FileInputStream fis = new FileInputStream(KEYSTORE_PATH)) {
-            keystore.load(fis, KEYSTORE_PWD);
-        }
-
+        final KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, KEYSTORE_PWD);
+        this.keystore = manager.getKeyStore();
         final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X_509);
-        kmf.init(keystore, KEYSTORE_PWD);
+        kmf.init(keystore, KEYSTORE_PWD.toCharArray());
 
         final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(SUN_X_509);
         trustManagerFactory.init(keystore);
+
         sslContext.init(kmf.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
     }
@@ -68,7 +63,7 @@ public class HttpsHelloServer {
         httpsServer.stop(retcode);
     }
   
-    public class HelloHandler implements HttpHandler {
+    public class ClientHandler implements HttpHandler {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
@@ -88,11 +83,11 @@ public class HttpsHelloServer {
         }
     }
 
-    private class PrivateKeyHandler implements HttpHandler {
+    private class StrongBoxHttpHandler implements HttpHandler {
 
         Map<String, String> parameters;
 
-        public PrivateKeyHandler() {
+        StrongBoxHttpHandler() {
             super();
             parameters = new HashMap<>();
         }
@@ -103,35 +98,27 @@ public class HttpsHelloServer {
             String query = reader.readLine();
             parseQuery(query);
 
+            StringBuilder response = new StringBuilder();
+
             // TODO: Check passwd in POST request to access the keystore.
             try {
-                getKey();
-            } catch (KeyStoreException e) {
+                KeyStoreManager manager = new KeyStoreManager("src/main/resources/keystore.jks", "password");
+                for (Certificate cert : manager.geyCertificates()) {
+                    response.append(cert.getPublicKey().getAlgorithm()).append("\n");
+                    response.append(cert.getPublicKey().getFormat()).append("\n");
+                    response.append(Base64.getEncoder().encodeToString(cert.getEncoded())).append("\n");
+                }
+            } catch (GeneralSecurityException e) {
                 e.printStackTrace();
             }
 
-            StringBuilder response = new StringBuilder();
             for (Map.Entry<String, String> param : parameters.entrySet()) {
                 response.append(param.getKey()).append(" ").append(param.getValue()).append("\n");
             }
+
             httpExchange.sendResponseHeaders(200, response.length());
             try (OutputStream os = httpExchange.getResponseBody()) {
                 os.write(response.toString().getBytes());
-            }
-        }
-
-        private void getKey() throws KeyStoreException {
-            Enumeration<String> aliases = keystore.aliases();
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
-                //if (keystore.isCertificateEntry(alias)) {
-                    final PublicKey publicKey = keystore.getCertificate(alias).getPublicKey();
-                    logger.info(publicKey.getAlgorithm());
-                    logger.info(publicKey.getFormat());
-                    logger.info(
-                            Base64.getEncoder().encodeToString(publicKey.getEncoded())
-                    );
-                //}
             }
         }
 
@@ -147,32 +134,8 @@ public class HttpsHelloServer {
         }
     }
 
-    private class HelloHttpsConfigurator extends HttpsConfigurator {
-
-        HelloHttpsConfigurator(SSLContext sslContext) {
-            super(sslContext);
-        }
-
-        @Override
-        public void configure(HttpsParameters httpsParameters) {
-            super.configure(httpsParameters);
-            try {
-                SSLContext c = SSLContext.getDefault();
-                SSLEngine engine = c.createSSLEngine();
-                httpsParameters.setNeedClientAuth(false);
-                httpsParameters.setCipherSuites(engine.getEnabledCipherSuites());
-                httpsParameters.setProtocols(engine.getEnabledProtocols());
-
-                SSLParameters defaultSslParams = c.getDefaultSSLParameters();
-                httpsParameters.setSSLParameters(defaultSslParams);
-            } catch (NoSuchAlgorithmException e) {
-                logger.log(Level.SEVERE, "Failed to create HTTPS port", e);
-            }
-        }
-    }
-
     public static void main(String[] args) {
-        HttpsHelloServer server = new HttpsHelloServer();
+        StrongboxHttpsServer server = new StrongboxHttpsServer();
         server.start();
     }
 
