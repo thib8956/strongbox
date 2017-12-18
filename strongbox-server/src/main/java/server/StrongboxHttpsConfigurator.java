@@ -13,11 +13,9 @@ import java.util.logging.Logger;
 class StrongboxHttpsConfigurator extends HttpsConfigurator {
 
     private final Logger logger = Logger.getLogger(StrongboxHttpsConfigurator.class.getName());
-    private StrongboxHttpsServer strongboxHttpsServer;
 
-    StrongboxHttpsConfigurator(StrongboxHttpsServer strongboxHttpsServer, SSLContext sslContext) {
+    StrongboxHttpsConfigurator(SSLContext sslContext) {
         super(sslContext);
-        this.strongboxHttpsServer = strongboxHttpsServer;
     }
 
     @Override

@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class StrongboxHttpsServer {
 
@@ -37,10 +36,9 @@ public class StrongboxHttpsServer {
             httpsServer = HttpsServer.create(address, 0);
 
             SSLContext sslContext = initSSLContext();
-            httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(this, sslContext));
-            httpsServer.createContext(MAIN_CONTEXT, new ClientHandler());
+            httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
             httpsServer.createContext("/pkserver", new StrongBoxHttpHandler());
-            httpsServer.createContext("/css", new StaticFileHandler("/css/", "../client/css", "index.html"));
+            httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("/", "../client"));
             httpsServer.setExecutor(null);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -68,30 +66,6 @@ public class StrongboxHttpsServer {
 
     public void stop(int retcode) {
         httpsServer.stop(retcode);
-    }
-  
-    public class ClientHandler implements HttpHandler {
-
-        @Override
-        public void handle(HttpExchange httpExchange) throws IOException {
-            String response = getHtml("../client/index.html");
-
-            final String requestedUri = httpExchange.getRequestURI().toString();
-            // Log the client request.
-            logger.info(httpExchange.getRequestMethod() + " " + requestedUri);
-            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            httpExchange.sendResponseHeaders(200, response.length());
-            OutputStream os = httpExchange.getResponseBody();
-            os.write(response.getBytes());
-            logger.info("Connexion done");
-            os.close();
-        }
-
-        public String getHtml(String path) throws IOException {
-            try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-                return reader.lines().collect(Collectors.joining(""));
-            }
-        }
     }
 
     private class StrongBoxHttpHandler implements HttpHandler {
