@@ -28,7 +28,6 @@ public class StrongboxHttpsServer {
 
     private final Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
     private HttpsServer httpsServer;
-    private KeyStore keystore;
 
     public StrongboxHttpsServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
@@ -38,7 +37,7 @@ public class StrongboxHttpsServer {
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
             httpsServer.createContext("/pkserver", new StrongBoxHttpHandler());
-            httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("/", "../client"));
+            httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("../client"));
             httpsServer.setExecutor(null);
 
         } catch (GeneralSecurityException | IOException e) {
@@ -49,7 +48,7 @@ public class StrongboxHttpsServer {
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
         final KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, KEYSTORE_PWD);
-        this.keystore = manager.getKeyStore();
+        KeyStore keystore = manager.getKeyStore();
         final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X_509);
         kmf.init(keystore, KEYSTORE_PWD.toCharArray());
 

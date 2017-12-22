@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author thibaud
- *
+ * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
+ * TODO: Javadoc
  */
 public class StaticFileHandler implements HttpHandler {
 
@@ -23,15 +23,13 @@ public class StaticFileHandler implements HttpHandler {
     }
 
     private String filesystemRoot;
-    private String urlPrefix;
 
-    public StaticFileHandler(String urlPrefix, String filesystemRoot) {
+    public StaticFileHandler(String filesystemRoot) {
         try {
             this.filesystemRoot = new File(filesystemRoot).getCanonicalPath();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        this.urlPrefix = urlPrefix;
     }
 
     @Override
@@ -50,7 +48,7 @@ public class StaticFileHandler implements HttpHandler {
         final File requestedFile = new File(filesystemRoot, requestedUrl).getCanonicalFile();
         FileInputStream fis;
         try {
-            fis=new FileInputStream(requestedFile);
+            fis = new FileInputStream(requestedFile);
         } catch (FileNotFoundException e) {
             sendError(httpExchange, 404, "File not found");
             return;
