@@ -67,8 +67,14 @@ public class KeyStoreManager {
     }
 
     // TODO: handle DSA keys
-    public static PublicKey getPublicKey(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        final byte[] byteKey = Base64.getDecoder().decode(b64Key);
+    public static PublicKey getPublicKey(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+        final byte[] byteKey;
+        try {
+            byteKey = Base64.getDecoder().decode(b64Key);
+        } catch (RuntimeException e) {
+            throw new InvalidKeyException(e);
+        }
+
         X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
         KeyFactory kf = KeyFactory.getInstance("RSA");
 

@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpsServer;
 import core.KeyStoreManager;
-import core.Utils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -12,9 +11,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.security.*;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -93,10 +90,16 @@ public class StrongboxHttpsServer {
                 final PublicKey publicKey = KeyStoreManager.getPublicKey(providedB64Key);
 
                 final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
+                if (privateKey == null) {
+                    throw new InvalidKeyException();
+                }
 
                 response.append("Algorithm : ").append(privateKey.getAlgorithm()).append("\n");
                 response.append("Format : ").append(privateKey.getFormat()).append("\n");
                 response.append(KeyStoreManager.privateKeyToString(privateKey));
+            } catch (InvalidKeyException e) {
+                logger.log(Level.WARNING, "Invalid public key", e);
+                response.append("The provided public key is invalid or wasn't found in the keystore.");
             } catch (GeneralSecurityException e) {
                 logger.log(Level.SEVERE, null, e);
             }
