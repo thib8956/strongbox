@@ -1,12 +1,15 @@
 package core;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sun.misc.BASE64Encoder;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Enumeration;
 
 /**
@@ -15,36 +18,61 @@ import java.util.Enumeration;
  */
 public class KeyStoreManager {
 
-    public static final String JCEKS = "JCEKS";
+    private static final String JCEKS = "JCEKS";
     private KeyStore keyStore;
+    private String passwd;
 
     public KeyStoreManager(String path, String passwd) throws GeneralSecurityException, IOException {
         this(path, JCEKS, passwd);
     }
 
-    private KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
+    public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
         keyStore = KeyStore.getInstance(keyStoreType);
         try (FileInputStream fileInputStream = new FileInputStream(path)) {
             keyStore.load(fileInputStream, passwd.toCharArray());
         }
+        this.passwd = passwd;
+    }
+
+    public Boolean checkPassword(String passwd) {
+        return passwd.equals(this.passwd);
     }
 
     public KeyStore getKeyStore() {
         return keyStore;
     }
 
-    public PrivateKey getPrivateKey(PublicKey publicKey) {
-        throw new NotImplementedException();
+    public PrivateKey getPrivateKey(PublicKey publicKey, String passwd) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
+        Enumeration<String> aliases = keyStore.aliases();
+
+        while (aliases.hasMoreElements()) {
+            String currentAlias = aliases.nextElement();
+            final Certificate certificate = keyStore.getCertificate(currentAlias);
+            final byte[] encodedKey = certificate.getPublicKey().getEncoded();
+            if (Arrays.equals(publicKey.getEncoded(), encodedKey)) {
+                return (PrivateKey) keyStore.getKey(currentAlias, passwd.toCharArray());
+            }
+        }
+        // No private key found.
+        return null;
     }
 
-    public Iterable<Certificate> geyCertificates() throws KeyStoreException {
-        final ArrayList<Certificate> certificates = new ArrayList<>();
-        final Enumeration<String> aliases = keyStore.aliases();
-        while (aliases.hasMoreElements()) {
-            String alias = aliases.nextElement();
-            certificates.add(keyStore.getCertificate(alias));
-        }
+    public static String privateKeyToString(PrivateKey pk) {
+        String s = "";
+        String encodedPk = new BASE64Encoder().encode(pk.getEncoded());
+        s += "-----BEGIN PRIVATE KEY-----\n";
+        s += encodedPk + '\n';
+        s += "-----END PRIVATE KEY-----\n";
+        return s;
+    }
 
-        return certificates;
+    // TODO: handle DSA keys
+    public static PublicKey getPublicKey(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        final byte[] byteKey = Base64.getDecoder().decode(b64Key);
+        X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+
+        // Get public key from base64 string
+        return kf.generatePublic(X509publicKey);
     }
 }

@@ -4,16 +4,17 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpsServer;
 import core.KeyStoreManager;
+import core.Utils;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.util.Base64;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.security.*;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -25,8 +26,10 @@ public class StrongboxHttpsServer {
     private static final String KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
     private static final String KEYSTORE_PWD = "password";
+    private static final String PKSERVER = "/pkserver";
+    private static final String ENCODING = "UTF-8";
 
-    private final Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
+    private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
     private HttpsServer httpsServer;
 
     public StrongboxHttpsServer() {
@@ -36,10 +39,9 @@ public class StrongboxHttpsServer {
 
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
-            httpsServer.createContext("/pkserver", new StrongBoxHttpHandler());
+            httpsServer.createContext(PKSERVER, new StrongBoxHttpHandler());
             httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("../client"));
             httpsServer.setExecutor(null);
-
         } catch (GeneralSecurityException | IOException e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -78,26 +80,25 @@ public class StrongboxHttpsServer {
 
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), "utf-8"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), ENCODING));
             String query = reader.readLine();
             parseQuery(query);
 
             StringBuilder response = new StringBuilder();
 
-            // TODO: Check passwd in POST request to access the keystore.
+            String providedB64Key = parameters.get("publickey").replaceAll("\\s", "");
+            String password = parameters.get("password");
             try {
-                KeyStoreManager manager = new KeyStoreManager("src/main/resources/keystore.jks", "password");
-                for (Certificate cert : manager.geyCertificates()) {
-                    response.append(cert.getPublicKey().getAlgorithm()).append("\n");
-                    response.append(cert.getPublicKey().getFormat()).append("\n");
-                    response.append(Base64.getEncoder().encodeToString(cert.getEncoded())).append("\n");
-                }
-            } catch (GeneralSecurityException e) {
-                e.printStackTrace();
-            }
+                KeyStoreManager manager = new KeyStoreManager("src/main/resources/keystore.jks", password);
+                final PublicKey publicKey = KeyStoreManager.getPublicKey(providedB64Key);
 
-            for (Map.Entry<String, String> param : parameters.entrySet()) {
-                response.append(param.getKey()).append(" ").append(param.getValue()).append("\n");
+                final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
+
+                response.append("Algorithm : ").append(privateKey.getAlgorithm()).append("\n");
+                response.append("Format : ").append(privateKey.getFormat()).append("\n");
+                response.append(KeyStoreManager.privateKeyToString(privateKey));
+            } catch (GeneralSecurityException e) {
+                logger.log(Level.SEVERE, null, e);
             }
 
             httpExchange.sendResponseHeaders(200, response.length());
@@ -106,14 +107,17 @@ public class StrongboxHttpsServer {
             }
         }
 
-        private void parseQuery(String query) {
+        private void parseQuery(String query) throws UnsupportedEncodingException {
             if (query == null) {
                 return;
             }
+
             final String[] pairs = query.split("[&]");
             for (String pair : pairs) {
                 final String[] param = pair.split("[=]");
-                parameters.put(param[0], param[1]);
+                String decodedValue =  URLDecoder.decode(param[1], ENCODING);
+
+                parameters.put(param[0], decodedValue);
             }
         }
     }
