@@ -24,15 +24,16 @@ import java.util.logging.Logger;
  */
 public class StrongboxHttpsServer {
 
+    private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
+
     private static final String MAIN_CONTEXT = "/";
     private static final String CERT_KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
     private static final String KEYSTORE_PWD = "password";
     private static final String PKSERVER = "/pkserver";
+    private static final String ADD_ENTRY = "/add";
     private static final String ENCODING = "UTF-8";
 
-    private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
-    public static final String ADD = "/add";
     private HttpsServer httpsServer;
     
 /**
@@ -48,7 +49,7 @@ public class StrongboxHttpsServer {
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
             httpsServer.createContext(PKSERVER, new StrongBoxHttpHandler(PKSERVER));
-            httpsServer.createContext(ADD, new StrongBoxHttpHandler(ADD));
+            httpsServer.createContext(ADD_ENTRY, new StrongBoxHttpHandler(ADD_ENTRY));
             httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("../client"));
 
             httpsServer.setExecutor(null);
@@ -133,7 +134,7 @@ public class StrongboxHttpsServer {
 
             if (context.equals(PKSERVER)) {
                 handlePkserver(httpExchange);
-            } else if (context.equals(ADD)) {
+            } else if (context.equals(ADD_ENTRY)) {
                 handleAdd(httpExchange);
             }
         }
@@ -151,7 +152,7 @@ public class StrongboxHttpsServer {
             String password = parameters.get("password");
             try {
                 KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
-                final PublicKey publicKey = KeyStoreManager.getPublicKey(providedB64Key);
+                final PublicKey publicKey = KeyStoreManager.publicKeyFromString(providedB64Key);
 
                 final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
                 if (privateKey == null) {
