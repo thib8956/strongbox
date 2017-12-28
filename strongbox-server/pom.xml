@@ -21,12 +21,4 @@
         </plugins>
     </build>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.48</version>
-        </dependency>
-    </dependencies>
-
 </project>
