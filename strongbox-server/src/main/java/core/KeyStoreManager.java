@@ -13,8 +13,8 @@ import java.util.Base64;
 import java.util.Enumeration;
 
 /**
- * Add methods to manage a KeyStore
- * A KeyStoreManager contains a KeyStore and a password
+ * This class contains methods to manage a KeyStore
+ * A KeyStoreManager contains a KeyStore and a password and allow to seek for key, add or remove key.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  * @see KeyStore
  */
@@ -71,10 +71,10 @@ public class KeyStoreManager {
     }   
     
 /**
- * Get the private key link to the input argument publicKey
+ * Look for a private key that matches the public key
  * @param publicKey User public key
  * @param passwd User password
- * @return The private key linked to the public key. 
+ * @return The private key wanted if it's founded. 
  * @throws KeyStoreException
  * @throws UnrecoverableKeyException
  * @throws NoSuchAlgorithmException
@@ -94,9 +94,9 @@ public class KeyStoreManager {
         return null;
     }
 /**
- * Format the private key to string
- * @param pk The private key to put in string.
- * @return A string representing the private Key
+ * Format the given private key to a string in PEM format.
+ * @param pk PrivateKey to format
+ * @return base64 representation of the key in PEM format
  */
     public static String privateKeyToString(PrivateKey pk) {
         String s = "";
@@ -109,7 +109,7 @@ public class KeyStoreManager {
 
     /**
      * Get the public key link to the b64Key input argument with the specification contained
-     * @param b64Key String representing the public key.
+     * @param b64Key Public key encoded in base64 in PEM format.
      * @return The Public Key
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException

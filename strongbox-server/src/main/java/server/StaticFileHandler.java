@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Manage request to give user files under the filesystemRoot path.
+ * This class is used to serve static files as html, javascript, css…
+ * 
+ * These files are stored in the directory designated by filesystemRoot.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  */
 public class StaticFileHandler implements HttpHandler {
@@ -26,7 +28,9 @@ public class StaticFileHandler implements HttpHandler {
     
 /**
  * Constructor for a StaticFileHandler. 
- * @param filesystemRoot File root path for server.
+ * 
+ * Only files under filesystemRoot directory will be served to the client.
+ * @param filesystemRoot The root directory in the filesystem.
  */
     public StaticFileHandler(String filesystemRoot) {
         try {

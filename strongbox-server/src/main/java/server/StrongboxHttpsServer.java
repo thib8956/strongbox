@@ -18,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 
+ * Private key server secured by HTTPS protocol. Allow finding, adding or removing keys from the server.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  *
  */
@@ -96,6 +96,8 @@ public class StrongboxHttpsServer {
     
 /**
  * An HttpHandler for the StrongBox server.
+ * 
+ * Can response to a "Get" request (Giving the private key), add keys or remove some keys.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  *
  */
@@ -137,7 +139,7 @@ public class StrongboxHttpsServer {
         }
         
 		/**
-		 * Manage the server private key.
+		 * Receive client request with the public key to find and the password, and give to client the linked private key or an error.
 		 * @param httpExchange the exchange containing the request from the client and used to send the response
 		 * @throws IOException
 		 * @see httpExchange
