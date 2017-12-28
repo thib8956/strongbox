@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * This class is used to serve static files as html, javascript, css…
+ * 
+ * These files are stored in the directory designated by filesystemRoot.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
- * TODO: Javadoc
  */
 public class StaticFileHandler implements HttpHandler {
 
@@ -23,7 +25,13 @@ public class StaticFileHandler implements HttpHandler {
     }
 
     private String filesystemRoot;
-
+    
+/**
+ * Constructor for a StaticFileHandler. 
+ * 
+ * Only files under filesystemRoot directory will be served to the client.
+ * @param filesystemRoot The root directory in the filesystem.
+ */
     public StaticFileHandler(String filesystemRoot) {
         try {
             this.filesystemRoot = new File(filesystemRoot).getCanonicalPath();
@@ -31,7 +39,17 @@ public class StaticFileHandler implements HttpHandler {
             throw new RuntimeException(e);
         }
     }
-
+    
+    /**
+     * Manage request.
+     * 
+     * Support only GET request.
+     * 
+     * Send the file on the response stream contains in the httpExchange input argument.
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException if there is an error on copyStream
+     * @see HttpExchange
+     */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
@@ -64,7 +82,15 @@ public class StaticFileHandler implements HttpHandler {
         }
         fis.close();
     }
-
+    
+/**
+ * Use the inputStream of the httpExchange input argument to write the error code and the message.
+ * @param httpExchange the exchange containing the request from the client and used to send the response
+ * @param code Error code to send.
+ * @param msg Message to send.
+ * @throws IOException if an I/O error occurs.
+ * @see HttpExchange
+ */
     private void sendError(HttpExchange httpExchange, int code, String msg) throws IOException {
         final byte[] msgBytes = msg.getBytes("UTF-8");
         httpExchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
@@ -73,7 +99,13 @@ public class StaticFileHandler implements HttpHandler {
             os.write(msgBytes);
         }
     }
-
+    
+/**
+ * Take bytes from an InputStream to write them on the OutputStream.
+ * @param is Stream to copy
+ * @param os Stream where to copy
+ * @throws IOException if an I/O error occurs.
+ */
     private static void copyStream(InputStream is, OutputStream os) throws IOException {
         final byte[] buf = new byte[4096];
         int n;
@@ -81,7 +113,12 @@ public class StaticFileHandler implements HttpHandler {
             os.write(buf, 0, n);
         }
     }
-
+    
+/**
+ * Give the file extension
+ * @param file File wich we whant the extention.
+ * @return String corresponding to the file input argument extension.
+ */
     private static String getFileExtension(File file) {
         String name = file.getName();
         try {
