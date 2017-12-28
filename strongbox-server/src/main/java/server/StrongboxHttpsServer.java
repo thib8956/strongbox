@@ -31,7 +31,7 @@ public class StrongboxHttpsServer {
     private static final String SUN_X_509 = "SunX509";
     private static final String KEYSTORE_PWD = "password";
     private static final String PKSERVER = "/pkserver";
-    private static final String ADD_ENTRY = "/add";
+    private static final String ADD_ENTRY = "/pkserver/add";
     private static final String ENCODING = "UTF-8";
 
     private HttpsServer httpsServer;
