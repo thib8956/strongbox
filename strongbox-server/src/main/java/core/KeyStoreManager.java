@@ -26,8 +26,8 @@ public class KeyStoreManager {
     
 /**
  * Constructor for a Keystore Manager with KeyStore type in JCEKS.
- * @param path
- * @param passwd
+ * @param path Path of the KeyStore
+ * @param passwd Password of the KeyStore
  * @throws GeneralSecurityException
  * @throws IOException
  * @see KeyStoreManager(String path, String keyStoreType, String passwd)
@@ -39,9 +39,9 @@ public class KeyStoreManager {
 /**
  * Second constructor for a Keystore Manager. 
  * The type of the KeyStore is determinated by the input argument : KeyStoreType
- * @param path
- * @param keyStoreType
- * @param passwd
+ * @param path Path of the KeyStore
+ * @param keyStoreType Type of the KeyStore (ex: JCEKS)
+ * @param passwd Password of the KeyStore
  * @throws GeneralSecurityException
  * @throws IOException
  */
@@ -55,7 +55,7 @@ public class KeyStoreManager {
     
 /**
  * Check if the input password is equal to store password.
- * @param passwd
+ * @param passwd Password to check
  * @return True if is equals or false
  */
     public Boolean checkPassword(String passwd) {
@@ -72,8 +72,8 @@ public class KeyStoreManager {
     
 /**
  * Get the private key link to the input argument publicKey
- * @param publicKey
- * @param passwd
+ * @param publicKey User public key
+ * @param passwd User password
  * @return The private key linked to the public key. 
  * @throws KeyStoreException
  * @throws UnrecoverableKeyException
@@ -95,7 +95,7 @@ public class KeyStoreManager {
     }
 /**
  * Format the private key to string
- * @param pk
+ * @param pk The private key to put in string.
  * @return A string representing the private Key
  */
     public static String privateKeyToString(PrivateKey pk) {
@@ -109,7 +109,7 @@ public class KeyStoreManager {
 
     /**
      * Get the public key link to the b64Key input argument with the specification contained
-     * @param b64Key
+     * @param b64Key String representing the public key.
      * @return The Public Key
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException

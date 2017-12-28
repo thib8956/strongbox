@@ -26,7 +26,7 @@ public class StaticFileHandler implements HttpHandler {
     
 /**
  * Constructor for a StaticFileHandler. 
- * @param filesystemRoot
+ * @param filesystemRoot File root path for server.
  */
     public StaticFileHandler(String filesystemRoot) {
         try {
@@ -36,16 +36,17 @@ public class StaticFileHandler implements HttpHandler {
         }
     }
     
+    /**
+     * Manage request.
+     * 
+     * Support only GET request.
+     * 
+     * Send the file on the response stream contains in the httpExchange input argument.
+     * @param httpExchange the exchange containing the request from the client and used to send the response
+     * @throws IOException
+     * @see httpExchange
+     */
     @Override
-/**
- * Manage request.
- * 
- * Support only GET request.
- * 
- * Send the file on the response stream contains in the httpExchange input argument.
- * @param httpExchange the exchange containing the request from the client and used to send the response
- * @throws IOException
- */
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
         if (! method.equals("GET")) {
@@ -81,9 +82,10 @@ public class StaticFileHandler implements HttpHandler {
 /**
  * Use the inputStream of the httpExchange input argument to write the error code and the message.
  * @param httpExchange the exchange containing the request from the client and used to send the response
- * @param code
- * @param msg
+ * @param code Error code to send.
+ * @param msg Message to send.
  * @throws IOException
+ * @see httpExchange
  */
     private void sendError(HttpExchange httpExchange, int code, String msg) throws IOException {
         final byte[] msgBytes = msg.getBytes("UTF-8");
@@ -96,8 +98,8 @@ public class StaticFileHandler implements HttpHandler {
     
 /**
  * Take bytes from an InputStream to write them on the OutputStream.
- * @param is
- * @param os
+ * @param is Stream to copy
+ * @param os Stream where to copy
  * @throws IOException
  */
     private static void copyStream(InputStream is, OutputStream os) throws IOException {
@@ -110,7 +112,7 @@ public class StaticFileHandler implements HttpHandler {
     
 /**
  * Give the file extension
- * @param file
+ * @param file File wich we whant the extention.
  * @return String corresponding to the file input argument extension.
  */
     private static String getFileExtension(File file) {

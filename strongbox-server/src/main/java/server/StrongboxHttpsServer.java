@@ -105,23 +105,25 @@ public class StrongboxHttpsServer {
         Map<String, String> parameters;
         private String context;
 
-	/**
-	 * Constructor for the StrongBoxHttpHandler.
-	 * @param context
-	 */
+		/**
+		 * Constructor for the StrongBoxHttpHandler.
+		 * @param context
+		 */
         StrongBoxHttpHandler(String context) {
             super();
             this.context = context;
             parameters = new HashMap<>();
         }
-
+        
+		/**
+		* Handles a given request and generates an appropriate response.
+		* 
+		* Override HttpHandler.handle
+		* @param httpExchange the exchange containing the request from the client and used to send the response
+		* @throws IOException
+		* @see httpExchange
+		*/
         @Override
-	/**
-	* Handles a given request and generates an appropriate response.
-	* @param httpExchange the exchange containing the request from the client and used to send the response
-	* @throws IOException
-	* @see httpExchange
-	*/
         public void handle(HttpExchange httpExchange) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), ENCODING));
             String query = reader.readLine();
@@ -134,12 +136,12 @@ public class StrongboxHttpsServer {
             }
         }
         
-	/**
-	 * Manage the server private key.
-	 * @param httpExchange the exchange containing the request from the client and used to send the response
-	 * @throws IOException
-	 * @see httpExchange
-	 */
+		/**
+		 * Manage the server private key.
+		 * @param httpExchange the exchange containing the request from the client and used to send the response
+		 * @throws IOException
+		 * @see httpExchange
+		 */
         private void handlePkserver(HttpExchange httpExchange) throws IOException {
             StringBuilder response = new StringBuilder();
 
@@ -170,16 +172,16 @@ public class StrongboxHttpsServer {
             }
         }
         
-        /**
-         * 
-         * @param httpExchange
-         * @throws IOException
-         */
         private void handleAdd(HttpExchange httpExchange) throws IOException {
             String providedB64Cert = stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
             String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
         }
 
+        /**
+         * Parse the query for the server.
+         * @param query Query to parse
+         * @throws UnsupportedEncodingException
+         */
         private void parseQuery(String query) throws UnsupportedEncodingException {
             if (query == null) {
                 return;
@@ -194,6 +196,11 @@ public class StrongboxHttpsServer {
             }
         }
 
+        /**
+         * Clean a string from additionnal information.
+         * @param pem String to clean.
+         * @return The string cleaned from additionnal information.
+         */
         private String stripHeaders(String pem) {
             return pem.replaceAll("-----(BEGIN|END) ((PUBLIC|PRIVATE) KEY|CERTIFICATE)-----", "");
         }
