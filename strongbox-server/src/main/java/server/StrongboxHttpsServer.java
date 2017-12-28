@@ -20,13 +20,14 @@ import java.util.logging.Logger;
 public class StrongboxHttpsServer {
 
     private static final String MAIN_CONTEXT = "/";
-    private static final String KEYSTORE_PATH = "src/main/resources/cert.jks";
+    private static final String CERT_KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
     private static final String KEYSTORE_PWD = "password";
     private static final String PKSERVER = "/pkserver";
     private static final String ENCODING = "UTF-8";
 
     private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
+    public static final String ADD = "/add";
     private HttpsServer httpsServer;
 
     public StrongboxHttpsServer() {
@@ -36,8 +37,10 @@ public class StrongboxHttpsServer {
 
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
-            httpsServer.createContext(PKSERVER, new StrongBoxHttpHandler());
+            httpsServer.createContext(PKSERVER, new StrongBoxHttpHandler(PKSERVER));
+            httpsServer.createContext(ADD, new StrongBoxHttpHandler(ADD));
             httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("../client"));
+
             httpsServer.setExecutor(null);
         } catch (GeneralSecurityException | IOException e) {
             logger.log(Level.SEVERE, null, e);
@@ -46,7 +49,7 @@ public class StrongboxHttpsServer {
 
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
-        final KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, KEYSTORE_PWD);
+        final KeyStoreManager manager = new KeyStoreManager(CERT_KEYSTORE_PATH, KEYSTORE_PWD);
         KeyStore keystore = manager.getKeyStore();
         final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X_509);
         kmf.init(keystore, KEYSTORE_PWD.toCharArray());
@@ -68,10 +71,14 @@ public class StrongboxHttpsServer {
 
     private class StrongBoxHttpHandler implements HttpHandler {
 
+        static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
         Map<String, String> parameters;
+        private String context;
 
-        StrongBoxHttpHandler() {
+
+        StrongBoxHttpHandler(String context) {
             super();
+            this.context = context;
             parameters = new HashMap<>();
         }
 
@@ -81,12 +88,20 @@ public class StrongboxHttpsServer {
             String query = reader.readLine();
             parseQuery(query);
 
+            if (context.equals(PKSERVER)) {
+                handlePkserver(httpExchange);
+            } else if (context.equals(ADD)) {
+                handleAdd(httpExchange);
+            }
+        }
+
+        private void handlePkserver(HttpExchange httpExchange) throws IOException {
             StringBuilder response = new StringBuilder();
 
-            String providedB64Key = parameters.get("publickey").replaceAll("\\s", "");
+            String providedB64Key = stripHeaders(parameters.get("publickey")).replaceAll("\\s", "");
             String password = parameters.get("password");
             try {
-                KeyStoreManager manager = new KeyStoreManager("src/main/resources/keystore.jks", password);
+                KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
                 final PublicKey publicKey = KeyStoreManager.getPublicKey(providedB64Key);
 
                 final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
@@ -110,6 +125,11 @@ public class StrongboxHttpsServer {
             }
         }
 
+        private void handleAdd(HttpExchange httpExchange) throws IOException {
+            String providedB64Cert = stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
+            String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
+        }
+
         private void parseQuery(String query) throws UnsupportedEncodingException {
             if (query == null) {
                 return;
@@ -122,6 +142,10 @@ public class StrongboxHttpsServer {
 
                 parameters.put(param[0], decodedValue);
             }
+        }
+
+        private String stripHeaders(String pem) {
+            return pem.replaceAll("-----(BEGIN|END) ((PUBLIC|PRIVATE) KEY|CERTIFICATE)-----", "");
         }
     }
 
