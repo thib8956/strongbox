@@ -23,16 +23,18 @@ import java.util.logging.Logger;
 class StrongBoxHttpHandler implements HttpHandler {
 
     private static final Logger logger = Logger.getLogger(StrongBoxHttpHandler.class.getName());
-    private static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
+//    private static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
+    private static final String KEYSTORE_PATH = "src/main/resources/sample/keystore_with_dsa.jks";
+
 
     private Map<String, String> parameters;
-    private String context;
+    private Context context;
 
     /**
      * Constructor for the StrongBoxHttpHandler.
      * @param context Context of server
      */
-    StrongBoxHttpHandler(String context) {
+    StrongBoxHttpHandler(Context context) {
         super();
         this.context = context;
         parameters = new HashMap<>();
@@ -53,10 +55,13 @@ class StrongBoxHttpHandler implements HttpHandler {
         String query = reader.readLine();
         parseQuery(query);
 
-        if (context.equalsIgnoreCase(Context.PKSERVER.name)) {
-            handlePkserver(httpExchange);
-        } else if (context.equalsIgnoreCase(Context.ADD.name)) {
-            handleAdd(httpExchange);
+        switch (context) {
+            case PKSERVER:
+                handlePkserver(httpExchange);
+                break;
+            case ADD:
+                handleAdd(httpExchange);
+                break;
         }
     }
 

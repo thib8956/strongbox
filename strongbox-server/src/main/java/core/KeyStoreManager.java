@@ -137,19 +137,19 @@ public class KeyStoreManager {
     // TODO: handle DSA keys
     public static PublicKey publicKeyFromString(String b64Key) throws NoSuchAlgorithmException,
             InvalidKeySpecException, InvalidKeyException {
-        final byte[] byteKey;
+        final byte[] keyBytes = decodeKey(b64Key);
+
+        final X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+        PublicKey key;
         try {
-            byteKey = Base64.getDecoder().decode(b64Key);
-        } catch (RuntimeException e) {
-            // Error while decoding Base64 input
-            throw new InvalidKeyException(e);
+            final KeyFactory kf = KeyFactory.getInstance("RSA");
+            key = kf.generatePublic(keySpec);
+        } catch (InvalidKeySpecException ignore) {
+            final KeyFactory kf = KeyFactory.getInstance("DSA");
+            key = kf.generatePublic(keySpec);
         }
 
-        X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-
-        // Get public key from base64 string
-        return kf.generatePublic(X509publicKey);
+        return key;
     }
 
     public static Certificate certificateFromString(String b64Cert) throws CertificateException {
@@ -169,15 +169,27 @@ public class KeyStoreManager {
     // TODO: handle DSA keys
     public static PrivateKey privateKeyFromString(String b64Key) throws NoSuchAlgorithmException,
             InvalidKeySpecException, InvalidKeyException {
-        final byte[] keyBytes;
+        final byte[] keyBytes = decodeKey(b64Key);
+
+        final PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
+        PrivateKey key;
         try {
-            keyBytes = Base64.getDecoder().decode(b64Key);
+            final KeyFactory kf = KeyFactory.getInstance("RSA");
+            key = kf.generatePrivate(keySpec);
+        } catch (InvalidKeySpecException ignore) {
+            final KeyFactory kf = KeyFactory.getInstance("DSA");
+            key = kf.generatePrivate(keySpec);
+        }
+
+        return key;
+    }
+
+    private static byte[] decodeKey(String b64Key) throws InvalidKeyException {
+        try {
+            return Base64.getDecoder().decode(b64Key);
         } catch (RuntimeException e) {
             // Error while decoding Base64 input
             throw new InvalidKeyException();
         }
-
-        final KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(new PKCS8EncodedKeySpec(keyBytes));
     }
 }
