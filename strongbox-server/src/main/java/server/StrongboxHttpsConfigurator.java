@@ -9,7 +9,11 @@ import javax.net.ssl.SSLParameters;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+/**
+ * 
+ * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
+ * @see HttpsConfigurator
+ */
 class StrongboxHttpsConfigurator extends HttpsConfigurator {
 
     private final Logger logger = Logger.getLogger(StrongboxHttpsConfigurator.class.getName());

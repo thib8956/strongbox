@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Manage request to give user files under the filesystemRoot path.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
- * TODO: Javadoc
  */
 public class StaticFileHandler implements HttpHandler {
 
@@ -23,7 +23,11 @@ public class StaticFileHandler implements HttpHandler {
     }
 
     private String filesystemRoot;
-
+    
+/**
+ * Constructor for a StaticFileHandler. 
+ * @param filesystemRoot
+ */
     public StaticFileHandler(String filesystemRoot) {
         try {
             this.filesystemRoot = new File(filesystemRoot).getCanonicalPath();
@@ -31,8 +35,17 @@ public class StaticFileHandler implements HttpHandler {
             throw new RuntimeException(e);
         }
     }
-
+    
     @Override
+/**
+ * Manage request.
+ * 
+ * Support only GET request.
+ * 
+ * Send the file on the response stream contains in the httpExchange input argument.
+ * @param httpExchange the exchange containing the request from the client and used to send the response
+ * @throws IOException
+ */
     public void handle(HttpExchange httpExchange) throws IOException {
         String method = httpExchange.getRequestMethod();
         if (! method.equals("GET")) {
@@ -64,7 +77,14 @@ public class StaticFileHandler implements HttpHandler {
         }
         fis.close();
     }
-
+    
+/**
+ * Use the inputStream of the httpExchange input argument to write the error code and the message.
+ * @param httpExchange the exchange containing the request from the client and used to send the response
+ * @param code
+ * @param msg
+ * @throws IOException
+ */
     private void sendError(HttpExchange httpExchange, int code, String msg) throws IOException {
         final byte[] msgBytes = msg.getBytes("UTF-8");
         httpExchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
@@ -73,7 +93,13 @@ public class StaticFileHandler implements HttpHandler {
             os.write(msgBytes);
         }
     }
-
+    
+/**
+ * Take bytes from an InputStream to write them on the OutputStream.
+ * @param is
+ * @param os
+ * @throws IOException
+ */
     private static void copyStream(InputStream is, OutputStream os) throws IOException {
         final byte[] buf = new byte[4096];
         int n;
@@ -81,7 +107,12 @@ public class StaticFileHandler implements HttpHandler {
             os.write(buf, 0, n);
         }
     }
-
+    
+/**
+ * Give the file extension
+ * @param file
+ * @return String corresponding to the file input argument extension.
+ */
     private static String getFileExtension(File file) {
         String name = file.getName();
         try {

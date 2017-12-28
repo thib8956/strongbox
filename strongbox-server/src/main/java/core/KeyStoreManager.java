@@ -13,19 +13,38 @@ import java.util.Base64;
 import java.util.Enumeration;
 
 /**
+ * Add methods to manage a KeyStore
+ * A KeyStoreManager contains a KeyStore and a password
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
- * TODO: Javadoc
+ * @see KeyStore
  */
 public class KeyStoreManager {
 
     private static final String JCEKS = "JCEKS";
     private KeyStore keyStore;
     private String passwd;
-
+    
+/**
+ * Constructor for a Keystore Manager with KeyStore type in JCEKS.
+ * @param path
+ * @param passwd
+ * @throws GeneralSecurityException
+ * @throws IOException
+ * @see KeyStoreManager(String path, String keyStoreType, String passwd)
+ */
     public KeyStoreManager(String path, String passwd) throws GeneralSecurityException, IOException {
         this(path, JCEKS, passwd);
     }
-
+    
+/**
+ * Second constructor for a Keystore Manager. 
+ * The type of the KeyStore is determinated by the input argument : KeyStoreType
+ * @param path
+ * @param keyStoreType
+ * @param passwd
+ * @throws GeneralSecurityException
+ * @throws IOException
+ */
     public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
         keyStore = KeyStore.getInstance(keyStoreType);
         try (FileInputStream fileInputStream = new FileInputStream(path)) {
@@ -33,15 +52,33 @@ public class KeyStoreManager {
         }
         this.passwd = passwd;
     }
-
+    
+/**
+ * Check if the input password is equal to store password.
+ * @param passwd
+ * @return True if is equals or false
+ */
     public Boolean checkPassword(String passwd) {
         return passwd.equals(this.passwd);
     }
-
+ 
+    /**
+     * Give the KeyStore instance
+     * @return The KeyStore instance
+     */
     public KeyStore getKeyStore() {
         return keyStore;
-    }
-
+    }   
+    
+/**
+ * Get the private key link to the input argument publicKey
+ * @param publicKey
+ * @param passwd
+ * @return The private key linked to the public key. 
+ * @throws KeyStoreException
+ * @throws UnrecoverableKeyException
+ * @throws NoSuchAlgorithmException
+ */
     public PrivateKey getPrivateKey(PublicKey publicKey, String passwd) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
         Enumeration<String> aliases = keyStore.aliases();
 
@@ -56,7 +93,11 @@ public class KeyStoreManager {
         // No private key found.
         return null;
     }
-
+/**
+ * Format the private key to string
+ * @param pk
+ * @return A string representing the private Key
+ */
     public static String privateKeyToString(PrivateKey pk) {
         String s = "";
         String encodedPk = new BASE64Encoder().encode(pk.getEncoded());
@@ -66,6 +107,14 @@ public class KeyStoreManager {
         return s;
     }
 
+    /**
+     * Get the public key link to the b64Key input argument with the specification contained
+     * @param b64Key
+     * @return The Public Key
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     * @throws InvalidKeyException
+     */
     // TODO: handle DSA keys
     public static PublicKey getPublicKey(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
         final byte[] byteKey;

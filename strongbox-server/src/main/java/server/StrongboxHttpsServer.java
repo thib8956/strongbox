@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * 
+ * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
+ *
+ */
 public class StrongboxHttpsServer {
 
     private static final String MAIN_CONTEXT = "/";
@@ -29,7 +34,12 @@ public class StrongboxHttpsServer {
     private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
     public static final String ADD = "/add";
     private HttpsServer httpsServer;
-
+    
+/**
+ * Constructor for the StrongBoxHttpsServer.
+ * Initialize the StrongBox context
+ * @see StrongBoxHttpsConfigurator
+ */
     public StrongboxHttpsServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
         try {
@@ -46,7 +56,13 @@ public class StrongboxHttpsServer {
             logger.log(Level.SEVERE, null, e);
         }
     }
-
+    
+/**
+ * Initialize a SSLContext.
+ * @return The SSLContext initialized.
+ * @throws GeneralSecurityException
+ * @throws IOException
+ */
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
         final KeyStoreManager manager = new KeyStoreManager(CERT_KEYSTORE_PATH, KEYSTORE_PWD);
@@ -60,22 +76,39 @@ public class StrongboxHttpsServer {
         sslContext.init(kmf.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         return sslContext;
     }
-
+    
+/**
+ * Start the server.
+ * @see com.sun.net.httpserver.HttpServer.start()
+ */
     public void start() {
         httpsServer.start();
     }
 
+/**
+ * Stop the server.   
+ * @param retcode
+ * @see com.sun.net.httpserver.HttpServer.stop(int)
+ */
     public void stop(int retcode) {
         httpsServer.stop(retcode);
     }
-
+    
+/**
+ * An HttpHandler for the StrongBox server.
+ * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
+ *
+ */
     private class StrongBoxHttpHandler implements HttpHandler {
 
         static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
         Map<String, String> parameters;
         private String context;
 
-
+	/**
+	 * Constructor for the StrongBoxHttpHandler.
+	 * @param context
+	 */
         StrongBoxHttpHandler(String context) {
             super();
             this.context = context;
@@ -83,6 +116,12 @@ public class StrongboxHttpsServer {
         }
 
         @Override
+	/**
+	* Handles a given request and generates an appropriate response.
+	* @param httpExchange the exchange containing the request from the client and used to send the response
+	* @throws IOException
+	* @see httpExchange
+	*/
         public void handle(HttpExchange httpExchange) throws IOException {
             BufferedReader reader = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody(), ENCODING));
             String query = reader.readLine();
@@ -94,7 +133,13 @@ public class StrongboxHttpsServer {
                 handleAdd(httpExchange);
             }
         }
-
+        
+	/**
+	 * Manage the server private key.
+	 * @param httpExchange the exchange containing the request from the client and used to send the response
+	 * @throws IOException
+	 * @see httpExchange
+	 */
         private void handlePkserver(HttpExchange httpExchange) throws IOException {
             StringBuilder response = new StringBuilder();
 
@@ -124,7 +169,12 @@ public class StrongboxHttpsServer {
                 os.write(response.toString().getBytes());
             }
         }
-
+        
+        /**
+         * 
+         * @param httpExchange
+         * @throws IOException
+         */
         private void handleAdd(HttpExchange httpExchange) throws IOException {
             String providedB64Cert = stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
             String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
