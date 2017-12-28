@@ -28,9 +28,9 @@ public class KeyStoreManager {
  * Constructor for a Keystore Manager with KeyStore type in JCEKS.
  * @param path Path of the KeyStore
  * @param passwd Password of the KeyStore
- * @throws GeneralSecurityException
- * @throws IOException
- * @see KeyStoreManager(String path, String keyStoreType, String passwd)
+ * @throws GeneralSecurityException if a security manager exists and its checkRead method denies read access to the file.
+ * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
+ * @see #KeyStoreManager(String path, String keyStoreType, String passwd)
  */
     public KeyStoreManager(String path, String passwd) throws GeneralSecurityException, IOException {
         this(path, JCEKS, passwd);
@@ -42,8 +42,9 @@ public class KeyStoreManager {
  * @param path Path of the KeyStore
  * @param keyStoreType Type of the KeyStore (ex: JCEKS)
  * @param passwd Password of the KeyStore
- * @throws GeneralSecurityException
- * @throws IOException
+ * @throws GeneralSecurityException if a security manager exists and its checkRead method denies read access to the file.
+ * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
+ * @see SecurityManager#checkRead(java.lang.String)
  */
     public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
         keyStore = KeyStore.getInstance(keyStoreType);
@@ -75,9 +76,9 @@ public class KeyStoreManager {
  * @param publicKey User public key
  * @param passwd User password
  * @return The private key wanted if it's founded. 
- * @throws KeyStoreException
- * @throws UnrecoverableKeyException
- * @throws NoSuchAlgorithmException
+ * @throws KeyStoreException if the keystore has not been initialized (loaded).
+ * @throws UnrecoverableKeyException if the key cannot be recovered (e.g., the given password is wrong).
+ * @throws NoSuchAlgorithmException if the algorithm for recovering the key cannot be found
  */
     public PrivateKey getPrivateKey(PublicKey publicKey, String passwd) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
         Enumeration<String> aliases = keyStore.aliases();
@@ -111,9 +112,9 @@ public class KeyStoreManager {
      * Get the public key link to the b64Key input argument with the specification contained
      * @param b64Key Public key encoded in base64 in PEM format.
      * @return The Public Key
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidKeySpecException
-     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException if no Provider supports a KeyFactorySpi implementation for the specified algorithm.
+     * @throws InvalidKeySpecException if the given key specification is inappropriate for this key factory to produce a public key.
+     * @throws InvalidKeyException if b64Key is not in valid Base64 scheme.
      */
     // TODO: handle DSA keys
     public static PublicKey getPublicKey(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {

@@ -38,7 +38,7 @@ public class StrongboxHttpsServer {
 /**
  * Constructor for the StrongBoxHttpsServer.
  * Initialize the StrongBox context
- * @see StrongBoxHttpsConfigurator
+ * @see StrongboxHttpsConfigurator
  */
     public StrongboxHttpsServer() {
         InetSocketAddress address = new InetSocketAddress(8000);
@@ -60,8 +60,8 @@ public class StrongboxHttpsServer {
 /**
  * Initialize a SSLContext.
  * @return The SSLContext initialized.
- * @throws GeneralSecurityException
- * @throws IOException
+ * @throws GeneralSecurityException if a security manager exists and its checkRead method denies read access to the file.
+ * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
  */
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
         final SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -79,7 +79,7 @@ public class StrongboxHttpsServer {
     
 /**
  * Start the server.
- * @see com.sun.net.httpserver.HttpServer.start()
+ * @see com.sun.net.httpserver.HttpServer#start()
  */
     public void start() {
         httpsServer.start();
@@ -87,8 +87,8 @@ public class StrongboxHttpsServer {
 
 /**
  * Stop the server.   
- * @param retcode
- * @see com.sun.net.httpserver.HttpServer.stop(int)
+ * @param retcode The maximum time in seconds to wait until exchanges have finished.
+ * @see com.sun.net.httpserver.HttpServer#stop(int delay)
  */
     public void stop(int retcode) {
         httpsServer.stop(retcode);
@@ -109,7 +109,7 @@ public class StrongboxHttpsServer {
 
 		/**
 		 * Constructor for the StrongBoxHttpHandler.
-		 * @param context
+		 * @param context Context of server
 		 */
         StrongBoxHttpHandler(String context) {
             super();
@@ -122,8 +122,8 @@ public class StrongboxHttpsServer {
 		* 
 		* Override HttpHandler.handle
 		* @param httpExchange the exchange containing the request from the client and used to send the response
-		* @throws IOException
-		* @see httpExchange
+		* @throws IOException If an I/O error occurs
+		* @see HttpExchange
 		*/
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
@@ -141,8 +141,8 @@ public class StrongboxHttpsServer {
 		/**
 		 * Receive client request with the public key to find and the password, and give to client the linked private key or an error.
 		 * @param httpExchange the exchange containing the request from the client and used to send the response
-		 * @throws IOException
-		 * @see httpExchange
+		 * @throws IOException if an I/O error occurs.
+		 * @see HttpExchange
 		 */
         private void handlePkserver(HttpExchange httpExchange) throws IOException {
             StringBuilder response = new StringBuilder();
@@ -182,7 +182,7 @@ public class StrongboxHttpsServer {
         /**
          * Parse the query for the server.
          * @param query Query to parse
-         * @throws UnsupportedEncodingException
+         * @throws UnsupportedEncodingException If character encoding needs to be consulted, but named character encoding is not supported
          */
         private void parseQuery(String query) throws UnsupportedEncodingException {
             if (query == null) {

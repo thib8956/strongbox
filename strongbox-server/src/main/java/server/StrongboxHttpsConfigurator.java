@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Https Configurator for StrongBox server.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
- * @see HttpsConfigurator
+ * @see com.sun.net.httpserver.HttpsConfigurator
  */
 class StrongboxHttpsConfigurator extends HttpsConfigurator {
 
@@ -31,8 +31,8 @@ class StrongboxHttpsConfigurator extends HttpsConfigurator {
     /**
      * Called by the HttpsServer to configure the parameters for a https connection currently being established.
      * @param httpsParameters Set of parameters for https connection.
-     * @see httpsParameters
-     * @see HttpsServer
+     * @see HttpsParameters
+     * @see com.sun.net.httpserver.HttpsServer
      */
     @Override
     public void configure(HttpsParameters httpsParameters) {

@@ -47,8 +47,8 @@ public class StaticFileHandler implements HttpHandler {
      * 
      * Send the file on the response stream contains in the httpExchange input argument.
      * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException
-     * @see httpExchange
+     * @throws IOException if there is an error on copyStream
+     * @see HttpExchange
      */
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -88,8 +88,8 @@ public class StaticFileHandler implements HttpHandler {
  * @param httpExchange the exchange containing the request from the client and used to send the response
  * @param code Error code to send.
  * @param msg Message to send.
- * @throws IOException
- * @see httpExchange
+ * @throws IOException if an I/O error occurs.
+ * @see HttpExchange
  */
     private void sendError(HttpExchange httpExchange, int code, String msg) throws IOException {
         final byte[] msgBytes = msg.getBytes("UTF-8");
@@ -104,7 +104,7 @@ public class StaticFileHandler implements HttpHandler {
  * Take bytes from an InputStream to write them on the OutputStream.
  * @param is Stream to copy
  * @param os Stream where to copy
- * @throws IOException
+ * @throws IOException if an I/O error occurs.
  */
     private static void copyStream(InputStream is, OutputStream os) throws IOException {
         final byte[] buf = new byte[4096];
