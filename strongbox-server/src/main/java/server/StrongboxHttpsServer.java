@@ -12,6 +12,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.security.*;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -176,8 +177,32 @@ public class StrongboxHttpsServer {
         }
         
         private void handleAdd(HttpExchange httpExchange) throws IOException {
+            String response = "The private key was successfully added to the keystore.";
+
             String providedB64Cert = stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
             String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
+            String providedAlias = parameters.get("alias");
+            String password = parameters.get("password");
+            if (password.isEmpty()) {
+                response = "You must provide a valid password.";
+            }
+
+            try {
+                KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
+                X509Certificate certificate = (X509Certificate) KeyStoreManager.certificateFromString(providedB64Cert);
+                PrivateKey privateKey = KeyStoreManager.privateKeyFromString(providedB64Key);
+
+                manager.addPrivateKey(providedAlias, certificate, privateKey);
+                //TODO: error handling
+            } catch (GeneralSecurityException e) {
+                logger.log(Level.WARNING, null, e);
+            }
+
+            // TODO: send response
+            httpExchange.sendResponseHeaders(200, response.length());
+            try (OutputStream os = httpExchange.getResponseBody()) {
+                os.write(response.getBytes());
+            }
         }
 
         /**
@@ -213,5 +238,6 @@ public class StrongboxHttpsServer {
         StrongboxHttpsServer server = new StrongboxHttpsServer();
         server.start();
     }
+
 
 }

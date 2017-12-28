@@ -22,6 +22,8 @@ public class StaticFileHandler implements HttpHandler {
         MIME_TYPES.put("css", "text/css");
         MIME_TYPES.put("html", "text/html");
         MIME_TYPES.put("js", "application/javascript");
+        MIME_TYPES.put("jpg", "image/jpeg");
+        MIME_TYPES.put("jpeg", "image/jpeg");
     }
 
     private String filesystemRoot;

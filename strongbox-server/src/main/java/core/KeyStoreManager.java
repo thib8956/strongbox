@@ -2,10 +2,7 @@ package core;
 
 import sun.misc.BASE64Encoder;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -26,6 +23,7 @@ import java.util.Enumeration;
 public class KeyStoreManager {
 
     private static final String JCEKS = "JCEKS";
+    private String path;
     private KeyStore keyStore;
     private String passwd;
 
@@ -52,6 +50,7 @@ public class KeyStoreManager {
      * @see SecurityManager#checkRead(java.lang.String)
      */
     public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
+        this.path = path;
         keyStore = KeyStore.getInstance(keyStoreType);
         try (FileInputStream fileInputStream = new FileInputStream(path)) {
             keyStore.load(fileInputStream, passwd.toCharArray());
@@ -114,8 +113,12 @@ public class KeyStoreManager {
         return s;
     }
 
-    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException {
+    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         keyStore.setKeyEntry(alias, privateKey, passwd.toCharArray(), new Certificate[]{cert});
+        // store away the keystore
+        try (FileOutputStream fos = new FileOutputStream(path)) {
+            keyStore.store(fos, passwd.toCharArray());
+        }
     }
 
     /**
