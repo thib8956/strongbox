@@ -51,11 +51,11 @@ public class KeyStoreManager {
      */
     public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
         this.path = path;
+        this.passwd = passwd;
         keyStore = KeyStore.getInstance(keyStoreType);
         try (FileInputStream fileInputStream = new FileInputStream(path)) {
             keyStore.load(fileInputStream, passwd.toCharArray());
         }
-        this.passwd = passwd;
     }
 
     /**

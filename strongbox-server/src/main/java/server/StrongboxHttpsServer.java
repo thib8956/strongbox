@@ -27,13 +27,16 @@ public class StrongboxHttpsServer {
 
     private final static Logger logger = Logger.getLogger(StrongboxHttpsServer.class.getName());
 
-    private static final String MAIN_CONTEXT = "/";
+    private static final String ROOT = "../client";
     private static final String CERT_KEYSTORE_PATH = "src/main/resources/cert.jks";
     private static final String SUN_X_509 = "SunX509";
     private static final String KEYSTORE_PWD = "password";
+    private static final String PROTOCOL = "TLS";
+    private static final String ENCODING = "UTF-8";
+    // Contexts
+    private static final String MAIN_CONTEXT = "/";
     private static final String PKSERVER = "/pkserver";
     private static final String ADD_ENTRY = "/pkserver/add";
-    private static final String ENCODING = "UTF-8";
 
     private HttpsServer httpsServer;
     
@@ -43,16 +46,15 @@ public class StrongboxHttpsServer {
  * @see StrongboxHttpsConfigurator
  */
     public StrongboxHttpsServer() {
-        InetSocketAddress address = new InetSocketAddress(8000);
         try {
+            InetSocketAddress address = new InetSocketAddress(8000);
             httpsServer = HttpsServer.create(address, 0);
 
             SSLContext sslContext = initSSLContext();
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
             httpsServer.createContext(PKSERVER, new StrongBoxHttpHandler(PKSERVER));
             httpsServer.createContext(ADD_ENTRY, new StrongBoxHttpHandler(ADD_ENTRY));
-            httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler("../client"));
-
+            httpsServer.createContext(MAIN_CONTEXT, new StaticFileHandler(ROOT));
             httpsServer.setExecutor(null);
         } catch (GeneralSecurityException | IOException e) {
             logger.log(Level.SEVERE, null, e);
@@ -66,7 +68,7 @@ public class StrongboxHttpsServer {
  * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
  */
     private SSLContext initSSLContext() throws GeneralSecurityException, IOException {
-        final SSLContext sslContext = SSLContext.getInstance("TLS");
+        final SSLContext sslContext = SSLContext.getInstance(PROTOCOL);
         final KeyStoreManager manager = new KeyStoreManager(CERT_KEYSTORE_PATH, KEYSTORE_PWD);
         KeyStore keystore = manager.getKeyStore();
         final KeyManagerFactory kmf = KeyManagerFactory.getInstance(SUN_X_509);
@@ -151,6 +153,7 @@ public class StrongboxHttpsServer {
 
             String providedB64Key = stripHeaders(parameters.get("publickey")).replaceAll("\\s", "");
             String password = parameters.get("password");
+
             try {
                 KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
                 final PublicKey publicKey = KeyStoreManager.publicKeyFromString(providedB64Key);
@@ -163,6 +166,12 @@ public class StrongboxHttpsServer {
                 response.append("Algorithm : ").append(privateKey.getAlgorithm()).append("\n");
                 response.append("Format : ").append(privateKey.getFormat()).append("\n");
                 response.append(KeyStoreManager.privateKeyToString(privateKey));
+            } catch (IOException e) {
+                // Bad password
+                if (e.getCause() instanceof UnrecoverableKeyException) {
+                    response.append("The provided password is incorrect.");
+                }
+                logger.log(Level.WARNING, null, e);
             } catch (InvalidKeyException e) {
                 logger.log(Level.WARNING, "Invalid public key", e);
                 response.append("The provided public key is invalid or wasn't found in the keystore.");
@@ -183,9 +192,6 @@ public class StrongboxHttpsServer {
             String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
             String providedAlias = parameters.get("alias");
             String password = parameters.get("password");
-            if (password.isEmpty()) {
-                response = "You must provide a valid password.";
-            }
 
             try {
                 KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
@@ -194,11 +200,16 @@ public class StrongboxHttpsServer {
 
                 manager.addPrivateKey(providedAlias, certificate, privateKey);
                 //TODO: error handling
+            } catch (IOException e) {
+                // Bad password
+                if (e.getCause() instanceof UnrecoverableKeyException) {
+                    response = "The provided password is incorrect.";
+                }
+                logger.log(Level.WARNING, null, e);
             } catch (GeneralSecurityException e) {
                 logger.log(Level.WARNING, null, e);
             }
 
-            // TODO: send response
             httpExchange.sendResponseHeaders(200, response.length());
             try (OutputStream os = httpExchange.getResponseBody()) {
                 os.write(response.getBytes());
@@ -238,6 +249,4 @@ public class StrongboxHttpsServer {
         StrongboxHttpsServer server = new StrongboxHttpsServer();
         server.start();
     }
-
-
 }
