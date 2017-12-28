@@ -25,18 +25,18 @@ public class KeyStoreManager {
     private static final String JCEKS = "JCEKS";
     private String path;
     private KeyStore keyStore;
-    private String passwd;
+    private String password;
 
     /**
      * Constructor for a Keystore Manager with KeyStore type in JCEKS.
      * @param path Path of the KeyStore
-     * @param passwd Password of the KeyStore
+     * @param password Password of the KeyStore
      * @throws GeneralSecurityException if a security manager exists and its checkRead method denies read access to the file.
      * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
-     * @see #KeyStoreManager(String path, String keyStoreType, String passwd)
+     * @see #KeyStoreManager(String path, String keyStoreType, String password)
      */
-    public KeyStoreManager(String path, String passwd) throws GeneralSecurityException, IOException {
-        this(path, JCEKS, passwd);
+    public KeyStoreManager(String path, String password) throws GeneralSecurityException, IOException {
+        this(path, JCEKS, password);
     }
 
     /**
@@ -44,27 +44,18 @@ public class KeyStoreManager {
      * The type of the KeyStore is determinated by the input argument : KeyStoreType
      * @param path Path of the KeyStore
      * @param keyStoreType Type of the KeyStore (ex: JCEKS)
-     * @param passwd Password of the KeyStore
+     * @param password Password of the KeyStore
      * @throws GeneralSecurityException if a security manager exists and its checkRead method denies read access to the file.
      * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
      * @see SecurityManager#checkRead(java.lang.String)
      */
-    public KeyStoreManager(String path, String keyStoreType, String passwd) throws GeneralSecurityException, IOException {
+    public KeyStoreManager(String path, String keyStoreType, String password) throws GeneralSecurityException, IOException {
         this.path = path;
-        this.passwd = passwd;
+        this.password = password;
         keyStore = KeyStore.getInstance(keyStoreType);
         try (FileInputStream fileInputStream = new FileInputStream(path)) {
-            keyStore.load(fileInputStream, passwd.toCharArray());
+            keyStore.load(fileInputStream, password.toCharArray());
         }
-    }
-
-    /**
-     * Check if the input password is equal to store password.
-     * @param passwd Password to check
-     * @return True if is equals or false
-     */
-    public Boolean checkPassword(String passwd) {
-        return passwd.equals(this.passwd);
     }
 
     /**
@@ -99,6 +90,14 @@ public class KeyStoreManager {
         return null;
     }
 
+    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        keyStore.setKeyEntry(alias, privateKey, password.toCharArray(), new Certificate[]{cert});
+        // store away the keystore
+        try (FileOutputStream fos = new FileOutputStream(path)) {
+            keyStore.store(fos, password.toCharArray());
+        }
+    }
+
     /**
      * Format the given private key to a string in PEM format.
      * @param pk PrivateKey to format
@@ -113,12 +112,18 @@ public class KeyStoreManager {
         return s;
     }
 
-    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        keyStore.setKeyEntry(alias, privateKey, passwd.toCharArray(), new Certificate[]{cert});
-        // store away the keystore
-        try (FileOutputStream fos = new FileOutputStream(path)) {
-            keyStore.store(fos, passwd.toCharArray());
-        }
+    /**
+     * Format the given public key to a string in PEM format.
+     * @param pk PublicKey to format
+     * @return base64 representation of the key in PEM format
+     */
+    public static String publicKeyToString(PublicKey pk) {
+        String s = "";
+        String encodedPk = new BASE64Encoder().encode(pk.getEncoded());
+        s += "-----BEGIN PUBLIC KEY-----\n";
+        s += encodedPk + '\n';
+        s += "-----END PUBLIC KEY-----\n";
+        return s;
     }
 
     /**
@@ -130,7 +135,8 @@ public class KeyStoreManager {
      * @throws InvalidKeyException if b64Key is not in valid Base64 scheme.
      */
     // TODO: handle DSA keys
-    public static PublicKey publicKeyFromString(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+    public static PublicKey publicKeyFromString(String b64Key) throws NoSuchAlgorithmException,
+            InvalidKeySpecException, InvalidKeyException {
         final byte[] byteKey;
         try {
             byteKey = Base64.getDecoder().decode(b64Key);
@@ -161,7 +167,8 @@ public class KeyStoreManager {
     }
 
     // TODO: handle DSA keys
-    public static PrivateKey privateKeyFromString(String b64Key) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+    public static PrivateKey privateKeyFromString(String b64Key) throws NoSuchAlgorithmException,
+            InvalidKeySpecException, InvalidKeyException {
         final byte[] keyBytes;
         try {
             keyBytes = Base64.getDecoder().decode(b64Key);
