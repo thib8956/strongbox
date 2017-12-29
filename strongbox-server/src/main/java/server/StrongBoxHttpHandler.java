@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 /**
  * An HttpHandler for the StrongBox server.
  *
- * Can response to a "Get" request (Giving the private key), add keys or remove some keys.
+ * Can response to a "Get" request (Giving the private key), add keys or remove some keys from the keystore.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  *
  */
@@ -110,6 +110,12 @@ class StrongBoxHttpHandler implements HttpHandler {
         }
     }
 
+    /**
+     * Receive client request with the private key, the certificate, the alias and the password to add the key in the KeyStore.
+     * @param httpExchange the exchange containing the request from the client and used to send the response.
+     * @throws IOException if an I/O error occurs.
+     * @see HttpExchange
+     */
     private void handleAdd(HttpExchange httpExchange) throws IOException {
         String response = "The private key was successfully added to the keystore.";
 
@@ -139,7 +145,13 @@ class StrongBoxHttpHandler implements HttpHandler {
             os.write(response.getBytes());
         }
     }
-
+    
+    /**
+     * Receive client request with the alias and the password to delete the key from the KeyStore.
+     * @param httpExchange the exchange containing the request from the client and used to send the response.
+     * @throws IOException if an I/O error occurs.
+     * @see HttpExchange
+     */
     private void handleDelete(HttpExchange httpExchange) throws IOException {
         String providedAlias = parameters.get("alias");
         String password = parameters.get("password");
