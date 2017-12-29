@@ -1,6 +1,7 @@
 package core;
 
 import sun.misc.BASE64Encoder;
+import sun.rmi.runtime.Log;
 
 import java.io.*;
 import java.security.*;
@@ -13,6 +14,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class contains methods to manage a KeyStore
@@ -21,6 +24,8 @@ import java.util.Enumeration;
  * @see KeyStore
  */
 public class KeyStoreManager {
+
+    private static final Logger logger = Logger.getLogger(KeyStoreManager.class.getName());
 
     private static final String JCEKS = "JCEKS";
     private String path;
@@ -75,7 +80,8 @@ public class KeyStoreManager {
      * @throws UnrecoverableKeyException if the key cannot be recovered (e.g., the given password is wrong).
      * @throws NoSuchAlgorithmException if the algorithm for recovering the key cannot be found
      */
-    public PrivateKey getPrivateKey(PublicKey publicKey, String passwd) throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    public PrivateKey getPrivateKey(PublicKey publicKey, String passwd) throws KeyStoreException,
+            UnrecoverableKeyException, NoSuchAlgorithmException {
         Enumeration<String> aliases = keyStore.aliases();
 
         while (aliases.hasMoreElements()) {
@@ -90,19 +96,25 @@ public class KeyStoreManager {
         return null;
     }
 
-    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException,
+            IOException, CertificateException {
         keyStore.setKeyEntry(alias, privateKey, password.toCharArray(), new Certificate[]{cert});
-        // store away the keystore
-        try (FileOutputStream fos = new FileOutputStream(path)) {
-            keyStore.store(fos, password.toCharArray());
-        }
+        saveKeystore();
     }
 
-    public void deleteEntry(String alias) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    public void deleteEntry(String alias) throws KeyStoreException, IOException, CertificateException {
         keyStore.deleteEntry(alias);
+        saveKeystore();
+    }
+
+    private void saveKeystore() throws IOException, CertificateException {
         // store away the keystore
         try (FileOutputStream fos = new FileOutputStream(path)) {
             keyStore.store(fos, password.toCharArray());
+        } catch (NoSuchAlgorithmException e) {
+            logger.log(Level.SEVERE, null, e);
+        } catch (KeyStoreException e) {
+            logger.log(Level.SEVERE, "The keystore has not been initialized.", e);
         }
     }
 
@@ -142,7 +154,6 @@ public class KeyStoreManager {
      * @throws InvalidKeySpecException if the given key specification is inappropriate for this key factory to produce a public key.
      * @throws InvalidKeyException if b64Key is not in valid Base64 scheme.
      */
-    // TODO: handle DSA keys
     public static PublicKey publicKeyFromString(String b64Key) throws NoSuchAlgorithmException,
             InvalidKeySpecException, InvalidKeyException {
         final byte[] keyBytes = decodeKey(b64Key);
@@ -174,7 +185,6 @@ public class KeyStoreManager {
         return factory.generateCertificate(is);
     }
 
-    // TODO: handle DSA keys
     public static PrivateKey privateKeyFromString(String b64Key) throws NoSuchAlgorithmException,
             InvalidKeySpecException, InvalidKeyException {
         final byte[] keyBytes = decodeKey(b64Key);

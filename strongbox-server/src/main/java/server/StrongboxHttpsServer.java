@@ -6,9 +6,10 @@ import core.KeyStoreManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
+import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
