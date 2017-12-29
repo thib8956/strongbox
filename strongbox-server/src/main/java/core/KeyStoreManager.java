@@ -98,6 +98,14 @@ public class KeyStoreManager {
         }
     }
 
+    public void deleteEntry(String alias) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        keyStore.deleteEntry(alias);
+        // store away the keystore
+        try (FileOutputStream fos = new FileOutputStream(path)) {
+            keyStore.store(fos, password.toCharArray());
+        }
+    }
+
     /**
      * Format the given private key to a string in PEM format.
      * @param pk PrivateKey to format

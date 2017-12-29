@@ -45,6 +45,7 @@ public class StrongboxHttpsServer {
             httpsServer.setHttpsConfigurator(new StrongboxHttpsConfigurator(sslContext));
             httpsServer.createContext(Context.PKSERVER.name, new StrongBoxHttpHandler(Context.PKSERVER));
             httpsServer.createContext(Context.ADD.name, new StrongBoxHttpHandler(Context.ADD));
+            httpsServer.createContext(Context.DELETE.name, new StrongBoxHttpHandler(Context.DELETE));
             httpsServer.createContext(Context.MAIN.name, new StaticFileHandler(ROOT));
             httpsServer.setExecutor(null);
         } catch (GeneralSecurityException | IOException e) {
