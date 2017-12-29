@@ -23,8 +23,7 @@ import java.util.logging.Logger;
 class StrongBoxHttpHandler implements HttpHandler {
 
     private static final Logger logger = Logger.getLogger(StrongBoxHttpHandler.class.getName());
-//    private static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
-    private static final String KEYSTORE_PATH = "src/main/resources/sample/keystore_with_dsa.jks";
+    private static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
 
 
     private Map<String, String> parameters;
@@ -61,6 +60,9 @@ class StrongBoxHttpHandler implements HttpHandler {
                 break;
             case ADD:
                 handleAdd(httpExchange);
+                break;
+            case DELETE:
+                handleDelete(httpExchange);
                 break;
         }
     }
@@ -122,7 +124,6 @@ class StrongBoxHttpHandler implements HttpHandler {
             PrivateKey privateKey = KeyStoreManager.privateKeyFromString(providedB64Key);
 
             manager.addPrivateKey(providedAlias, certificate, privateKey);
-            //TODO: error handling
         } catch (IOException e) {
             // Bad password
             if (e.getCause() instanceof UnrecoverableKeyException) {
@@ -131,6 +132,34 @@ class StrongBoxHttpHandler implements HttpHandler {
             logger.log(Level.WARNING, null, e);
         } catch (GeneralSecurityException e) {
             logger.log(Level.WARNING, null, e);
+        }
+
+        httpExchange.sendResponseHeaders(200, response.length());
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+
+    private void handleDelete(HttpExchange httpExchange) throws IOException {
+        String providedAlias = parameters.get("alias");
+        String password = parameters.get("password");
+        String response = "";
+
+        try {
+            KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
+            manager.deleteEntry(providedAlias);
+            response = "The key corresponding to the alias " + providedAlias +
+                    " was sucessfully deleted from the keystore.";
+        } catch (IOException e) {
+            // Bad password
+            if (e.getCause() instanceof UnrecoverableKeyException) {
+                response = "The provided password is incorrect.";
+            }
+        } catch (KeyStoreException e) {
+            response = "The alias " + providedAlias + "was not found in the keystore.";
+            logger.log(Level.WARNING, null, e);
+        } catch (GeneralSecurityException e) {
+            logger.log(Level.SEVERE, null, e);
         }
 
         httpExchange.sendResponseHeaders(200, response.length());
