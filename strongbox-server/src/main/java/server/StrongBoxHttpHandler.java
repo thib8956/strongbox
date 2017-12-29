@@ -44,7 +44,7 @@ class StrongBoxHttpHandler implements HttpHandler {
      *
      * Override HttpHandler.handle
      * @param httpExchange the exchange containing the request from the client and used to send the response
-     * @throws IOException If an I/O error occurs
+     * @throws IOException if an I/O error occurs
      * @see HttpExchange
      */
     @Override

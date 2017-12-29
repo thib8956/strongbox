@@ -97,7 +97,7 @@ public class KeyStoreManager {
     }
     
 	/**
-	 * Add a private key to the KeyStore with it's alias and certificate.
+	 * Add a private key to the KeyStore with its alias and certificate.
 	 * @param alias Alias of the private key.
 	 * @param cert Certificate of the private key.
 	 * @param privateKey The private key.
