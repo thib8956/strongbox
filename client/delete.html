@@ -7,12 +7,10 @@
 </head>
 
 <body>
-	<div class="add-page">
+	<div class="delete-page">
 		<div class="form">
-			<form class="add-form" action="/pkserver/add" method="post">
+			<form class="delete-form" action="/pkserver/delete" method="post">
 				<input type="text" name="alias" value="" placeholder="alias">
-				<textarea name="cert" id="cert" cols="65" rows="10" placeholder="Certificate"></textarea>
-				<textarea name="privatekey" id="privatekey" cols="65" rows="10" placeholder="privatekey"></textarea>
 				<input type="password" placeholder="password" name="password"/>
 				<input type="submit" value="Envoyer">
 			</form>
