@@ -95,18 +95,39 @@ public class KeyStoreManager {
         // No private key found.
         return null;
     }
-
+    
+	/**
+	 * Add a private key to the KeyStore with its alias and certificate.
+	 * @param alias Alias of the private key.
+	 * @param cert Certificate of the private key.
+	 * @param privateKey The private key.
+	 * @throws KeyStoreException if the keystore has not been initialized (loaded), the given key cannot be protected, or this operation fails for some other reason.
+	 * @throws IOException if some I/O problem occur.
+	 * @throws CertificateException if some certificate problem occur.
+	 */
     public void addPrivateKey(String alias, Certificate cert, PrivateKey privateKey) throws KeyStoreException,
             IOException, CertificateException {
         keyStore.setKeyEntry(alias, privateKey, password.toCharArray(), new Certificate[]{cert});
         saveKeystore();
     }
-
+    
+	/**
+	 * Delete a private key by its alias
+	 * @param alias Alias of the key to delete.
+	 * @throws KeyStoreException if the keystore has not been initialized, or if the entry cannot be removed.
+	 * @throws IOException if some I/O problem occur.
+	 * @throws CertificateException if some certificate problem occur.
+	 */
     public void deleteEntry(String alias) throws KeyStoreException, IOException, CertificateException {
         keyStore.deleteEntry(alias);
         saveKeystore();
     }
 
+	/**
+	 * Stores this keystore to the private member class path, and protects its integrity with the private member class password.   
+	 * @throws IOException if there was an I/O problem with data
+	 * @throws CertificateException if any of the certificates included in the keystore data could not be stored
+	 */
     private void saveKeystore() throws IOException, CertificateException {
         // store away the keystore
         try (FileOutputStream fos = new FileOutputStream(path)) {
@@ -170,7 +191,13 @@ public class KeyStoreManager {
 
         return key;
     }
-
+    
+	/**
+	* Get the certificate link to the b64Cert input argument
+	* @param b64Cert Certificate encoded in base64 in PEM format
+	* @return The certificate
+	* @throws CertificateException if error while decoding Base64 input
+	*/
     public static Certificate certificateFromString(String b64Cert) throws CertificateException {
         final byte[] byteCert;
         try {
@@ -184,7 +211,15 @@ public class KeyStoreManager {
         CertificateFactory factory = CertificateFactory.getInstance("X509");
         return factory.generateCertificate(is);
     }
-
+    
+    /**
+     * Get the private key link to the b64Key input argument with the specification contained
+     * @param b64Key Private key encoded in base64 in PEM format.
+     * @return The private key
+     * @throws NoSuchAlgorithmException if no Provider supports a KeyFactorySpi implementation for the specified algorithm.
+     * @throws InvalidKeySpecException if the given key specification is inappropriate for this key factory to produce a public key.
+     * @throws InvalidKeyException if error while decoding Base64 input
+     */
     public static PrivateKey privateKeyFromString(String b64Key) throws NoSuchAlgorithmException,
             InvalidKeySpecException, InvalidKeyException {
         final byte[] keyBytes = decodeKey(b64Key);
@@ -202,6 +237,12 @@ public class KeyStoreManager {
         return key;
     }
 
+    /**
+     * Decodes a Base64 encoded String into a newly-allocated byte array.
+     * @param b64Key Key encoded in base64 in PEM format.
+     * @return A byte array containing the decoded bytes.
+     * @throws InvalidKeyException if error while decoding Base64 input
+     */
     private static byte[] decodeKey(String b64Key) throws InvalidKeyException {
         try {
             return Base64.getDecoder().decode(b64Key);
