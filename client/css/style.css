@@ -93,26 +93,26 @@ body {
   height: 100%;
 }
 .bgimg1{
-  background-image: url("https://cdn.pixabay.com/photo/2017/01/17/21/44/background-1988180_960_720.jpg");
+  background-image: url("/img/background-1988180_960_720.jpg");
   min-height: 650px;
   max-height: 1500px;
-  background-attachment: fixed; 
+  background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 .bgimg2{
-  background-image: url("https://cdn.pixabay.com/photo/2017/08/04/10/36/background-2579719_960_720.jpg");
+  background-image: url("/img/background-2579719_960_720.jpg");
   min-height: 600px;
-  background-attachment: fixed; 
+  background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 .bgimg3{
-  background-image: url("https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg");
+  background-image: url("/img/web-1012467_960_720.jpg");
   min-height: 650px;
-  background-attachment: fixed; 
+  background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -123,7 +123,7 @@ footer{
   font-size: 1.5em;
   background:#282e34;
   color: #FFFFFF;
-	text-align:center;
+  text-align:center;
   width:100%;
   margin: 0px;
   padding: 0px;
