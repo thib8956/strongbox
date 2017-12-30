@@ -7,7 +7,9 @@ import core.KeyStoreManager;
 import java.io.*;
 import java.net.URLDecoder;
 import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -93,12 +95,13 @@ class StrongBoxHttpHandler implements HttpHandler {
             response.append(KeyStoreManager.privateKeyToString(privateKey));
         } catch (IOException e) {
             // Bad password
+            final String msg = "The provided password is incorrect.";
             if (e.getCause() instanceof UnrecoverableKeyException) {
-                response.append("The provided password is incorrect.");
+                response.append(msg);
             }
-            logger.log(Level.WARNING, null, e);
-        } catch (InvalidKeyException e) {
-            logger.log(Level.WARNING, "Invalid public key", e);
+            logger.log(Level.WARNING, null, msg);
+        } catch (InvalidKeySpecException e) {
+            logger.log(Level.WARNING, "Invalid public key", e.getMessage());
             response.append("The provided public key is invalid or wasn't found in the keystore.");
         } catch (GeneralSecurityException e) {
             logger.log(Level.SEVERE, null, e);
@@ -132,12 +135,21 @@ class StrongBoxHttpHandler implements HttpHandler {
             manager.addPrivateKey(providedAlias, certificate, privateKey);
         } catch (IOException e) {
             // Bad password
+            final String msg = "The provided password is incorrect.";
             if (e.getCause() instanceof UnrecoverableKeyException) {
-                response = "The provided password is incorrect.";
+                response = msg;
             }
-            logger.log(Level.WARNING, null, e);
+            logger.log(Level.WARNING, null, msg);
+        } catch (CertificateException e) {
+            final String msg = "The provided certificate is incorrect or empty.";
+            response = msg;
+            logger.log(Level.SEVERE, msg, e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            final String msg = "The provided private key is incorrect or missing.";
+            response = msg;
+            logger.log(Level.SEVERE, msg, e.getMessage());
         } catch (GeneralSecurityException e) {
-            logger.log(Level.WARNING, null, e);
+            logger.log(Level.SEVERE, null, e);
         }
 
         httpExchange.sendResponseHeaders(200, response.length());
@@ -192,7 +204,11 @@ class StrongBoxHttpHandler implements HttpHandler {
 
         final String[] pairs = query.split("[&]");
         for (String pair : pairs) {
-            final String[] param = pair.split("[=]");
+            String[] param = pair.split("[=]");
+            if (param.length < 2) {
+                logger.log(Level.WARNING, "No value provided for parameter " + param[0]);
+                param = new String[] {param[0], ""};
+            }
             String decodedValue =  URLDecoder.decode(param[1], StrongboxHttpsServer.ENCODING);
 
             parameters.put(param[0], decodedValue);
