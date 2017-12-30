@@ -93,7 +93,7 @@ body {
   height: 100%;
 }
 .bgimg1{
-  background-image: url("/img/background-1988180_960_720.jpg");
+  background-image: url("../img/background-1988180_960_720.jpg");
   min-height: 650px;
   max-height: 1500px;
   background-attachment: fixed;
@@ -102,7 +102,7 @@ body {
   background-size: cover;
 }
 .bgimg2{
-  background-image: url("/img/background-2579719_960_720.jpg");
+  background-image: url("../img/background-2579719_960_720.jpg");
   min-height: 600px;
   background-attachment: fixed;
   background-position: center;
@@ -110,7 +110,7 @@ body {
   background-size: cover;
 }
 .bgimg3{
-  background-image: url("/img/web-1012467_960_720.jpg");
+  background-image: url("../img/web-1012467_960_720.jpg");
   min-height: 650px;
   background-attachment: fixed;
   background-position: center;
