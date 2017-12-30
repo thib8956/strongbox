@@ -61,7 +61,7 @@
   border-left: 5px solid #EF3B3A;
   transition: linear all 0.1s;
 }
-.add-form,.login-form{
+.add-form,.login-form,.delete-form{
   height: 650px;
 }
 .form{
