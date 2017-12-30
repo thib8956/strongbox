@@ -7,15 +7,18 @@
 </head>
 
 <body>
-	<div class="add-page">
-		<div class="form">
-			<form class="add-form" action="/pkserver/add" method="post">
-				<input type="text" name="alias" value="" placeholder="alias">
-				<textarea name="cert" id="cert" cols="65" rows="10" placeholder="Certificate"></textarea>
-				<textarea name="privatekey" id="privatekey" cols="65" rows="10" placeholder="privatekey"></textarea>
-				<input type="password" placeholder="password" name="password"/>
-				<input type="submit" value="Envoyer">
-			</form>
+	<div class="bgimg1">
+	  <div class="welcome">
+		 <a href="index.html" >Welcome on <strong>StrongBox</strong></a>
+	  </div>
+			<div class="add-form">
+				<form class="form" action="/pkserver/add" method="post">
+					<input type="text" name="alias" value="" placeholder="alias">
+					<textarea name="cert" id="cert" cols="65" rows="4" placeholder="Certificate"></textarea>
+					<textarea name="privatekey" id="privatekey" cols="65" rows="4" placeholder="privatekey"></textarea>
+					<input type="password" placeholder="password" name="password"/>
+					<input type="submit" value="Envoyer">
+				</form>
 		</div>
 	</div>
 
