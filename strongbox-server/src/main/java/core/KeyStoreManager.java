@@ -1,7 +1,6 @@
 package core;
 
 import sun.misc.BASE64Encoder;
-import sun.rmi.runtime.Log;
 
 import java.io.*;
 import java.security.*;
@@ -118,12 +117,20 @@ public class KeyStoreManager {
 	 * @throws IOException if some I/O problem occur.
 	 * @throws CertificateException if some certificate problem occur.
 	 */
-    public void deleteEntry(String alias) throws KeyStoreException, IOException, CertificateException {
+    public void deleteEntry(String alias) throws KeyStoreException, IOException {
+        if (! keyStore.containsAlias(alias)) {
+            throw new KeyStoreException("The alias " + alias + "was not found in the keystore.");
+        }
         keyStore.deleteEntry(alias);
-        saveKeystore();
+
+        try {
+            saveKeystore();
+        } catch (CertificateException ignore) {
+            // This should never happen when deleting an entry.
+        }
     }
 
-	/**
+    /**
 	 * Stores this keystore to the private member class path, and protects its integrity with the private member class password.   
 	 * @throws IOException if there was an I/O problem with data
 	 * @throws CertificateException if any of the certificates included in the keystore data could not be stored
