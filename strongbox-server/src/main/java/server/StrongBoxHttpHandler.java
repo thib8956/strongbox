@@ -3,6 +3,7 @@ package server;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import core.KeyStoreManager;
+import core.KeyUtils;
 
 import java.io.*;
 import java.net.URLDecoder;
@@ -83,7 +84,7 @@ class StrongBoxHttpHandler implements HttpHandler {
 
         try {
             KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
-            final PublicKey publicKey = KeyStoreManager.publicKeyFromString(providedB64Key);
+            final PublicKey publicKey = KeyUtils.publicKeyFromString(providedB64Key);
 
             final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
             if (privateKey == null) {
@@ -92,7 +93,7 @@ class StrongBoxHttpHandler implements HttpHandler {
 
             response.append("Algorithm : ").append(privateKey.getAlgorithm()).append("\n");
             response.append("Format : ").append(privateKey.getFormat()).append("\n");
-            response.append(KeyStoreManager.privateKeyToString(privateKey));
+            response.append(KeyUtils.privateKeyToString(privateKey));
         } catch (IOException e) {
             // Bad password
             final String msg = "The provided password is incorrect.";
@@ -129,8 +130,8 @@ class StrongBoxHttpHandler implements HttpHandler {
 
         try {
             KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
-            X509Certificate certificate = (X509Certificate) KeyStoreManager.certificateFromString(providedB64Cert);
-            PrivateKey privateKey = KeyStoreManager.privateKeyFromString(providedB64Key);
+            X509Certificate certificate = (X509Certificate) KeyUtils.certificateFromString(providedB64Cert);
+            PrivateKey privateKey = KeyUtils.privateKeyFromString(providedB64Key);
 
             manager.addPrivateKey(providedAlias, certificate, privateKey);
         } catch (IOException e) {
