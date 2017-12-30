@@ -28,15 +28,18 @@
   padding: 1%;
   box-sizing: border-box;
 }
+.container{
+  height: 900px;
+}
 .chapter{
-  width: 100%;
+  width: 30%;
   margin:0px;
-  font-size:2em;
+  font-size:1.5em;
   color: #FFFFFF;
+  float: left;
 }
 .chapter p{
   padding:20px;
-  width: 30%;
   opacity:0.8;
 }
 .chapter a{
@@ -49,7 +52,6 @@
   margin:20px;
   margin-left: -10px;
   padding: 20px;
-  width: 30%;
 }
 .chapter a:hover{
   opacity: 1;
@@ -59,14 +61,15 @@
   transition: linear all 0.1s;
 }
 .add-form,.login-form,.delete-form{
-  height: 650px;
+  width: 70%;
+  float: right;
 }
 .form{
   position: relative;
   z-index: 1;
   background: #FFFFFF;
   width: 20%;
-  margin-left: 40%;
+  margin-left: 15%;
   margin-right: 40%;
   margin-top: 5%;
   margin-bottom: 10%;
@@ -95,7 +98,7 @@ body {
 .bgimg1{
   background-image: url("../img/background-1988180_960_720.jpg");
   min-height: 650px;
-  max-height: 1500px;
+  max-height: 1200px;
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
@@ -111,7 +114,7 @@ body {
 }
 .bgimg3{
   background-image: url("../img/web-1012467_960_720.jpg");
-  min-height: 650px;
+  min-height: 400px;
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;

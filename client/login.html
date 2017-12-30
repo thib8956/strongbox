@@ -8,16 +8,24 @@
 
 <body>
   <div class="bgimg1">
-    <div class="welcome">
-      <a href="index.html" >Welcome on <strong>StrongBox</strong></a>
-    </div>
-    <div class="login-form">
-      <form class="form" action="/pkserver" method="post">
-        <textarea name="publickey" id="publickey" cols="65" rows="10" placeholder="publickey"></textarea>
-        <input type="password" placeholder="password" name="password"/>
-        <input type="submit" value="Envoyer">
-      </form>
-    </div>
+    <div class="container">
+      <div class="welcome">
+        <a href="index.html" >Welcome on <strong>StrongBox</strong></a>
+      </div>
+      <div class="chapter">
+        <p>Your Choice :</p>
+        <a href="login.html">Want to Login ?</a>
+        <a href="add.html">Want to Add a public key ?</a>
+        <a href="delete.html">Want to Delete a public key ?</a>
+      </div>
+      <div class="login-form">
+        <form class="form" action="/pkserver" method="post">
+          <textarea name="publickey" id="publickey" cols="65" rows="10" placeholder="publickey"></textarea>
+          <input type="password" placeholder="password" name="password"/>
+          <input type="submit" value="Envoyer">
+        </form>
+      </div>
+    </div>    
   </div>
 
   <script  src="js/index.js"></script>
