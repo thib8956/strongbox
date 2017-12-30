@@ -1,8 +1,68 @@
 @import url(https://fonts.googleapis.com/css?family=Raleway);
 
-.login-page {
+.welcome{
+  color: white;
+  width: 100%;
+  height: 200px;
+  background-color:#282e34;
+  padding:0px;
+  margin :0px;
+  text-align: center;
+  opacity:0.95;
+  position: sticky;
+}
+.welcome a{
+  top:30%;
+  font-size:3em;
+  text-decoration: none;
+  color: white;
+  position: relative;
+  height: 100%;
+}
+.presentation-project, .presentation-subject{
+  width: 100%;
+  color: #c0c0c0;
+  background-color: #282e34;
+  font-size: 2em;
+  text-align: center;
+  padding: 1%;
+  box-sizing: border-box;
+}
+.blank {
+  height: 200px;
+}
+.chapter{
+  width: 100%;
+  margin:0px;
+  font-size:2em;
+  color: #FFFFFF;
+}
+.chapter p{
+  padding:20px;
+  width: 30%;
+  opacity:0.8;
+}
+.chapter a{
 
-  width: 360px;
+  color: #FFFFFF;
+  display: flex;
+  text-decoration: none;
+  background-color: #282e34;
+  opacity: 0.8;
+  margin:20px;
+  margin-left: -10px;
+  padding: 20px;
+  width: 30%;
+}
+.chapter a:hover{
+  opacity: 1;
+  margin-left: 0;
+  color: #EF3B3A;
+  border-left: 5px solid #EF3B3A;
+  transition: linear all 0.1s;
+}
+.login-page {
+  width: 100%;
   padding: 8% 0 0;
   margin: auto;
 }
@@ -17,7 +77,6 @@
   box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
 }
 .form input, .form textarea {
-  font-family: "Raleway", sans-serif;
   outline: 0;
   background: #f2f2f2;
   width: 100%;
@@ -29,7 +88,6 @@
 }
 
 .form button {
-  font-family: "Raleway", sans-serif;
   text-transform: uppercase;
   outline: 0;
   background: #363636;
@@ -91,22 +149,47 @@
   color: #EF3B3A;
 }
 body {
-  background-image: url("http://dallevas.com/site/wp-content/uploads/2013/12/Black-Background-Pattern.jpg");
-  background-size:100% 100%;
--webkit-background-size: 100% 100%;
--o-background-size: 100% 100%;
--khtml-background-size: 100% 100%;
--moz-background-size: 100% 100%;
+  font-family: "Raleway", sans-serif;
+  display:block;
+  margin: 0px;
+  padding: 0px;
+  z-index:1;
+}
+.bgimg1{
+  background-image: url("https://cdn.pixabay.com/photo/2017/01/17/21/44/background-1988180_960_720.jpg");
+  min-height: 600px;
+  background-attachment: fixed; 
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bgimg2{
+  background-image: url("https://cdn.pixabay.com/photo/2017/08/04/10/36/background-2579719_960_720.jpg");
+  min-height: 600px;
+  background-attachment: fixed; 
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.bgimg3{
+  background-image: url("https://cdn.pixabay.com/photo/2015/10/29/14/38/web-1012467_960_720.jpg");
+  min-height: 650px;
+  background-attachment: fixed; 
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 footer{
   font-family: "Raleway", sans-serif;
-	background:#ccc;
+  font-size: 1.5em;
+  background:#282e34;
+  color: #FFFFFF;
 	text-align:center;
-	box-shadow: 6px 6px 0px #020833;
-	position:absolute;
-	bottom:0;
-	width:100%;
-	height:5%;
-	border: 3px #020833 solid;
+  width:100%;
+  margin: 0px;
+  padding: 0px;
+  line-height: 200%;
+  margin-top: -40px;
+  margin-bottom: -40px;
 }
