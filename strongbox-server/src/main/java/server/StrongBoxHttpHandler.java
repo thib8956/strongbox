@@ -86,9 +86,17 @@ class StrongBoxHttpHandler implements HttpHandler {
             KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
             final PublicKey publicKey = KeyUtils.publicKeyFromString(providedB64Key);
 
-            final PrivateKey privateKey = manager.getPrivateKey(publicKey, "");
+            PrivateKey privateKey;
+            try {
+                privateKey = manager.getPrivateKey(publicKey, password);
+            } catch (UnrecoverableKeyException e) {
+                //try again with empty password
+                logger.log(Level.WARNING, "Empty password");
+                privateKey = manager.getPrivateKey(publicKey, "");
+            }
+
             if (privateKey == null) {
-                throw new InvalidKeyException();
+                throw new InvalidKeySpecException();
             }
 
             response.append("Algorithm : ").append(privateKey.getAlgorithm()).append("\n");
