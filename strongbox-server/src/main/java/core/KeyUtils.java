@@ -1,7 +1,5 @@
 package core;
 
-import sun.misc.BASE64Encoder;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.*;
@@ -32,7 +30,7 @@ public final class KeyUtils {
      */
     public static String privateKeyToString(PrivateKey pk) {
         String s = "";
-        String encodedPk = new BASE64Encoder().encode(pk.getEncoded());
+        String encodedPk = Base64.getEncoder().encodeToString(pk.getEncoded());
         s += "-----BEGIN PRIVATE KEY-----\n";
         s += encodedPk + '\n';
         s += "-----END PRIVATE KEY-----\n";
@@ -46,7 +44,7 @@ public final class KeyUtils {
      */
     public static String publicKeyToString(PublicKey pk) {
         String s = "";
-        String encodedPk = new BASE64Encoder().encode(pk.getEncoded());
+        String encodedPk = Base64.getEncoder().encodeToString(pk.getEncoded());
         s += "-----BEGIN PUBLIC KEY-----\n";
         s += encodedPk + '\n';
         s += "-----END PUBLIC KEY-----\n";
