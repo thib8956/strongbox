@@ -122,6 +122,16 @@ public final class KeyUtils {
     }
 
     /**
+     * Clean a string from additional information.
+     *
+     * @param pem String to clean.
+     * @return The string cleaned from additional information.
+     */
+    public static String stripHeaders(String pem) {
+        return pem.replaceAll("-----(BEGIN|END) ((PUBLIC|PRIVATE) KEY|CERTIFICATE)-----", "");
+    }
+
+    /**
      * Decodes a Base64 encoded String into a newly-allocated byte array.
      * @param b64Key Key encoded in base64 in PEM format.
      * @return A byte array containing the decoded bytes.

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 /**
  * An HttpHandler for the StrongBox server.
- *
+ * <p>
  * Can response to a "Get" request (Giving the private key), add keys or remove some keys from the keystore.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  *
@@ -29,8 +29,8 @@ class StrongBoxHttpHandler implements HttpHandler {
     private static final String KEYSTORE_PATH = "src/main/resources/keystore.jks";
 
 
-    private Map<String, String> parameters;
-    private Context context;
+    private final Map<String, String> parameters;
+    private final Context context;
 
     /**
      * Constructor for the StrongBoxHttpHandler.
@@ -44,7 +44,7 @@ class StrongBoxHttpHandler implements HttpHandler {
 
     /**
      * Handles a given request and generates an appropriate response.
-     *
+     * <p>
      * Override HttpHandler.handle
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if an I/O error occurs
@@ -79,7 +79,7 @@ class StrongBoxHttpHandler implements HttpHandler {
     private void handlePkserver(HttpExchange httpExchange) throws IOException {
         StringBuilder response = new StringBuilder();
 
-        String providedB64Key = stripHeaders(parameters.get("publickey")).replaceAll("\\s", "");
+        String providedB64Key = KeyUtils.stripHeaders(parameters.get("publickey")).replaceAll("\\s", "");
         String password = parameters.get("password");
 
         try {
@@ -131,8 +131,8 @@ class StrongBoxHttpHandler implements HttpHandler {
     private void handleAdd(HttpExchange httpExchange) throws IOException {
         String response = "The private key was successfully added to the keystore.";
 
-        String providedB64Cert = stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
-        String providedB64Key = stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
+        String providedB64Cert = KeyUtils.stripHeaders(parameters.get("cert")).replaceAll("\\s", "");
+        String providedB64Key = KeyUtils.stripHeaders(parameters.get("privatekey")).replaceAll("\\s", "");
         String providedAlias = parameters.get("alias");
         String password = parameters.get("password");
 
@@ -182,7 +182,7 @@ class StrongBoxHttpHandler implements HttpHandler {
             KeyStoreManager manager = new KeyStoreManager(KEYSTORE_PATH, password);
             manager.deleteEntry(providedAlias);
             response = "The key corresponding to the alias " + providedAlias +
-                    " was sucessfully deleted from the keystore.";
+                    " was successfully deleted from the keystore.";
         } catch (IOException e) {
             // Bad password
             if (e.getCause() instanceof UnrecoverableKeyException) {
@@ -211,9 +211,9 @@ class StrongBoxHttpHandler implements HttpHandler {
             return;
         }
 
-        final String[] pairs = query.split("[&]");
+        final String[] pairs = query.split("&");
         for (String pair : pairs) {
-            String[] param = pair.split("[=]");
+            String[] param = pair.split("=");
             if (param.length < 2) {
                 logger.log(Level.WARNING, "No value provided for parameter " + param[0]);
                 param = new String[] {param[0], ""};
@@ -224,12 +224,4 @@ class StrongBoxHttpHandler implements HttpHandler {
         }
     }
 
-    /**
-     * Clean a string from additionnal information.
-     * @param pem String to clean.
-     * @return The string cleaned from additionnal information.
-     */
-    private String stripHeaders(String pem) {
-        return pem.replaceAll("-----(BEGIN|END) ((PUBLIC|PRIVATE) KEY|CERTIFICATE)-----", "");
-    }
 }

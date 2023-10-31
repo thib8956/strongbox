@@ -4,12 +4,13 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * This class is used to serve static files as html, javascript, css
- *
+ * <p>
  * These files are stored in the directory designated by filesystemRoot.
  * @author Alexandre Colicchio, Andy Chabalier, Philippe Letaif, Thibaud Gasser
  */
@@ -26,11 +27,11 @@ public class StaticFileHandler implements HttpHandler {
         MIME_TYPES.put("jpeg", "image/jpeg");
     }
 
-    private String filesystemRoot;
+    private final String filesystemRoot;
 
     /**
      * Constructor for a StaticFileHandler.
-     *
+     * <p>
      * Only files under filesystemRoot directory will be served to the client.
      * @param filesystemRoot The root directory in the filesystem.
      */
@@ -44,9 +45,9 @@ public class StaticFileHandler implements HttpHandler {
 
     /**
      * Manage request.
-     *
+     * <p>
      * Support only GET request.
-     *
+     * <p>
      * Send the file on the response stream contains in the httpExchange input argument.
      * @param httpExchange the exchange containing the request from the client and used to send the response
      * @throws IOException if there is an error on copyStream
@@ -94,7 +95,7 @@ public class StaticFileHandler implements HttpHandler {
      * @see HttpExchange
      */
     private void sendError(HttpExchange httpExchange, int code, String msg) throws IOException {
-        final byte[] msgBytes = msg.getBytes("UTF-8");
+        final byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
         httpExchange.getResponseHeaders().set("Content-Type", "text/plain; charset=utf-8");
         httpExchange.sendResponseHeaders(code, msgBytes.length);
         try (OutputStream os = httpExchange.getResponseBody()) {
@@ -118,7 +119,7 @@ public class StaticFileHandler implements HttpHandler {
 
     /**
      * Give the file extension
-     * @param file File wich we whant the extention.
+     * @param file File which we want the extension.
      * @return String corresponding to the file input argument extension.
      */
     private static String getFileExtension(File file) {

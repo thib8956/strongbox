@@ -22,9 +22,9 @@ public class KeyStoreManager {
     private static final Logger logger = Logger.getLogger(KeyStoreManager.class.getName());
 
     private static final String JCEKS = "JCEKS";
-    private String path;
-    private KeyStore keyStore;
-    private String password;
+    private final String path;
+    private final KeyStore keyStore;
+    private final String password;
 
     /**
      * Constructor for a Keystore Manager with KeyStore type in JCEKS.
@@ -111,7 +111,6 @@ public class KeyStoreManager {
      * @param alias Alias of the key to delete.
      * @throws KeyStoreException if the keystore has not been initialized, or if the entry cannot be removed.
      * @throws IOException if some I/O problem occur.
-     * @throws CertificateException if some certificate problem occur.
      */
     public void deleteEntry(String alias) throws KeyStoreException, IOException {
         if (! keyStore.containsAlias(alias)) {
@@ -121,8 +120,9 @@ public class KeyStoreManager {
 
         try {
             saveKeystore();
-        } catch (CertificateException ignore) {
+        } catch (CertificateException e) {
             // This should never happen when deleting an entry.
+            logger.log(Level.SEVERE, "Certificate exception whete deleting entry", e);
         }
     }
 
